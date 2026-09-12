@@ -1,0 +1,172 @@
+package com.mycompany.minipc.isa;
+
+import com.mycompany.minipc.excepciones.SintaxisException;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+/**
+ * Pruebas del ensamblador.
+ *
+ * La prueba central reproduce el programa de ejemplo del enunciado y
+ * verifica que las siete lineas den exactamente el binario de la lamina 7.
+ */
+class EnsambladorTest {
+
+    private Ensamblador ensamblador;
+
+    @BeforeEach
+    void prepararEnsamblador() {
+        ensamblador = new Ensamblador();
+    }
+
+    /** Las siete lineas del archivo de ejemplo del enunciado. */
+    private static List<String> programaDelEnunciado() {
+        return List.of(
+                "MOV AX, 5",
+                "MOV BX, 3",
+                "LOAD AX",
+                "ADD BX",
+                "SUB AX",
+                "STORE AX",
+                "MOV BX, -8");
+    }
+
+    @Test
+    @DisplayName("El programa del enunciado produce las siete palabras esperadas")
+    void ensamblaElProgramaDelEnunciado() throws SintaxisException {
+        List<Instruccion> programa = ensamblador.ensamblar(programaDelEnunciado());
+
+        assertEquals(7, programa.size());
+        String[] esperados = {
+            "0011 0001 00000101",
+            "0011 0010 00000011",
+            "0001 0001 00000000",
+            "0101 0010 00000000",
+            "0100 0001 00000000",
+            "0010 0001 00000000",
+            "0011 0010 10001000"
+        };
+        for (int i = 0; i < esperados.length; i++) {
+            assertEquals(esperados[i], programa.get(i).aBinarioFormateado(),
+                    "Fallo la linea " + (i + 1));
+        }
+    }
+
+    @Test
+    @DisplayName("Cada instruccion recuerda su numero de linea en el archivo")
+    void conservaElNumeroDeLinea() throws SintaxisException {
+        List<Instruccion> programa = ensamblador.ensamblar(programaDelEnunciado());
+        for (int i = 0; i < programa.size(); i++) {
+            assertEquals(i + 1, programa.get(i).getNumeroLinea());
+        }
+    }
+
+    @Test
+    @DisplayName("Las lineas vacias y los comentarios no ocupan memoria")
+    void descartaVaciasYComentarios() throws SintaxisException {
+        List<Instruccion> programa = ensamblador.ensamblar(List.of(
+                "; programa de prueba",
+                "",
+                "MOV AX, 5   ; carga inicial",
+                "   ",
+                "// suma el segundo registro",
+                "MOV BX, 3",
+                "ADD BX"));
+
+        assertEquals(3, programa.size());
+        assertEquals("MOV AX, 5", programa.get(0).getTextoFuente());
+        assertEquals(3, programa.get(0).getNumeroLinea());
+        assertEquals(6, programa.get(1).getNumeroLinea());
+        assertEquals(7, programa.get(2).getNumeroLinea());
+    }
+
+    @Test
+    @DisplayName("La coma es opcional y las mayusculas no importan")
+    void aceptaVariantesDeEscritura() throws SintaxisException {
+        List<Instruccion> programa = ensamblador.ensamblar(List.of(
+                "mov ax 5",
+                "MOV   bx,3",
+                "  load   Ax  "));
+
+        assertEquals(3, programa.size());
+        assertEquals("0011 0001 00000101", programa.get(0).aBinarioFormateado());
+        assertEquals("0011 0010 00000011", programa.get(1).aBinarioFormateado());
+        assertEquals("0001 0001 00000000", programa.get(2).aBinarioFormateado());
+    }
+
+    @Test
+    @DisplayName("El archivo de errores del enunciado reporta los tres problemas juntos")
+    void reportaTodosLosErroresDeUnaVez() {
+        SintaxisException e = assertThrows(SintaxisException.class,
+                () -> ensamblador.ensamblar(List.of(
+                        "MOV AX, 5",
+                        "JUMP 100",
+                        "ADD EX",
+                        "MOV BX, 300")));
+
+        assertEquals(3, e.cantidad());
+        assertTrue(e.getErrores().get(0).contains("Linea 2"), e.getErrores().get(0));
+        assertTrue(e.getErrores().get(0).contains("JUMP"), e.getErrores().get(0));
+        assertTrue(e.getErrores().get(1).contains("Linea 3"), e.getErrores().get(1));
+        assertTrue(e.getErrores().get(1).contains("EX"), e.getErrores().get(1));
+        assertTrue(e.getErrores().get(2).contains("Linea 4"), e.getErrores().get(2));
+        assertTrue(e.getErrores().get(2).contains("300"), e.getErrores().get(2));
+    }
+
+    @Test
+    @DisplayName("Falta el registro")
+    void detectaRegistroFaltante() {
+        SintaxisException e = assertThrows(SintaxisException.class,
+                () -> ensamblador.ensamblar(List.of("LOAD")));
+        assertTrue(e.getMessage().contains("falta el registro"), e.getMessage());
+    }
+
+    @Test
+    @DisplayName("Falta el valor inmediato de MOV")
+    void detectaInmediatoFaltante() {
+        SintaxisException e = assertThrows(SintaxisException.class,
+                () -> ensamblador.ensamblar(List.of("MOV AX")));
+        assertTrue(e.getMessage().contains("falta el valor inmediato"), e.getMessage());
+    }
+
+    @Test
+    @DisplayName("Sobran operandos en una operacion que no lleva inmediato")
+    void detectaOperandosSobrantes() {
+        SintaxisException e = assertThrows(SintaxisException.class,
+                () -> ensamblador.ensamblar(List.of("ADD BX 5")));
+        assertTrue(e.getMessage().contains("sobran operandos"), e.getMessage());
+    }
+
+    @Test
+    @DisplayName("El valor inmediato tiene que ser numerico")
+    void detectaValorNoNumerico() {
+        SintaxisException e = assertThrows(SintaxisException.class,
+                () -> ensamblador.ensamblar(List.of("MOV AX, cinco")));
+        assertTrue(e.getMessage().contains("valor no numerico"), e.getMessage());
+    }
+
+    @Test
+    @DisplayName("Un archivo sin instrucciones se rechaza")
+    void rechazaArchivoSinInstrucciones() {
+        SintaxisException e = assertThrows(SintaxisException.class,
+                () -> ensamblador.ensamblar(List.of("; solo comentarios", "", "   ")));
+        assertTrue(e.getMessage().contains("no contiene ninguna instruccion"), e.getMessage());
+    }
+
+    @Test
+    @DisplayName("Los valores negativos del rango se aceptan")
+    void aceptaNegativos() throws SintaxisException {
+        List<Instruccion> programa = ensamblador.ensamblar(List.of(
+                "MOV DX, -25",
+                "MOV CX, -127"));
+        assertEquals(-25, programa.get(0).getOperando());
+        assertEquals(-127, programa.get(1).getOperando());
+    }
+}
