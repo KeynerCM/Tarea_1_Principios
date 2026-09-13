@@ -4,11 +4,16 @@ import com.mycompany.minipc.core.BCP;
 import com.mycompany.minipc.isa.Instruccion;
 import com.mycompany.minipc.isa.RegistroID;
 
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableColumnModel;
+import java.awt.Color;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
@@ -36,6 +41,33 @@ public class VentanaPrincipal extends javax.swing.JFrame implements VistaPrincip
     /** Carpetas donde buscar los programas de ejemplo al abrir el dialogo. */
     private static final String[] CARPETAS_EJEMPLO = {"../../Ejemplo", "../Ejemplo", "Ejemplo"};
 
+    /** Accion de entrada: traer un programa del disco. */
+    private static final Color COLOR_CARGA = new Color(41, 98, 155);
+
+    /** Acciones que hacen avanzar el ciclo de instruccion. */
+    private static final Color COLOR_EJECUCION = new Color(34, 124, 78);
+
+    /** Accion que devuelve el procesador al inicio. */
+    private static final Color COLOR_REINICIO = new Color(176, 122, 24);
+
+    /** Accion destructiva: descarta lo cargado. */
+    private static final Color COLOR_LIMPIEZA = new Color(163, 58, 48);
+
+    /** Acciones auxiliares que no alteran la ejecucion. */
+    private static final Color COLOR_UTILIDAD = new Color(84, 95, 110);
+
+    private static final Color FONDO_DESHABILITADO = new Color(206, 208, 211);
+    private static final Color TEXTO_DESHABILITADO = new Color(128, 131, 136);
+
+    /** Estado del proceso mientras avanza con normalidad. */
+    private static final Color ESTADO_ACTIVO = new Color(34, 124, 78);
+
+    /** Estado del proceso cuando se detuvo por un error. */
+    private static final Color ESTADO_ERROR = new Color(163, 58, 48);
+
+    /** Estado del proceso cuando no hay nada cargado. */
+    private static final Color ESTADO_NEUTRO = new Color(96, 100, 106);
+
     private final ControladorPrincipal controlador;
 
     /**
@@ -61,7 +93,91 @@ public class VentanaPrincipal extends javax.swing.JFrame implements VistaPrincip
         tblMemoria.setDefaultRenderer(Object.class, controlador.getRenderMemoria());
         ajustarAnchos(tblMemoria.getColumnModel(), new int[]{50, 70, 130, 150});
 
+        pintarBotones();
         controlador.inicializarVista();
+    }
+
+    /**
+     * Nombre: pintarBotones
+     * Entradas: ninguna
+     * Salidas: ninguna
+     * Restricciones: ninguna
+     * Descripcion: asigna a cada boton el color de su grupo de acciones, de
+     *              modo que el usuario distinga de un vistazo lo que carga, lo
+     *              que ejecuta, lo que reinicia y lo que descarta.
+     */
+    private void pintarBotones() {
+        pintarBoton(btnCargar, COLOR_CARGA);
+        pintarBoton(btnEjecutar, COLOR_EJECUCION);
+        pintarBoton(btnPaso, COLOR_EJECUCION);
+        pintarBoton(btnReiniciar, COLOR_REINICIO);
+        pintarBoton(btnLimpiar, COLOR_LIMPIEZA);
+        pintarBoton(btnConfig, COLOR_UTILIDAD);
+        pintarBoton(btnEstadisticas, COLOR_UTILIDAD);
+    }
+
+    /**
+     * Nombre: pintarBoton
+     * Entradas: boton, control a pintar; color, fondo cuando este habilitado
+     * Salidas: ninguna
+     * Restricciones: hay que apagar el relleno propio de la apariencia del
+     *                sistema, porque de lo contrario Windows dibuja su propia
+     *                superficie encima y el color asignado no se ve
+     * Descripcion: pinta el boton y le agrega un oyente que vuelve a aplicar
+     *              el color cada vez que cambia su habilitacion. Sin ese
+     *              oyente, un boton deshabilitado conservaria su color vivo y
+     *              parecería disponible cuando no lo esta.
+     */
+    private void pintarBoton(final JButton boton, final Color color) {
+        boton.setContentAreaFilled(false);
+        boton.setOpaque(true);
+        boton.setBorderPainted(false);
+        boton.setFocusPainted(false);
+        boton.setBorder(BorderFactory.createEmptyBorder(7, 14, 7, 14));
+        aplicarColor(boton, color);
+        boton.addPropertyChangeListener("enabled", new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                aplicarColor(boton, color);
+            }
+        });
+    }
+
+    /**
+     * Nombre: aplicarColor
+     * Entradas: boton, control a pintar; color, fondo para el estado habilitado
+     * Salidas: ninguna
+     * Restricciones: ninguna
+     * Descripcion: aplica el color vivo con texto blanco si el boton esta
+     *              habilitado, y un gris apagado si no lo esta.
+     */
+    private void aplicarColor(JButton boton, Color color) {
+        if (boton.isEnabled()) {
+            boton.setBackground(color);
+            boton.setForeground(Color.WHITE);
+        } else {
+            boton.setBackground(FONDO_DESHABILITADO);
+            boton.setForeground(TEXTO_DESHABILITADO);
+        }
+    }
+
+    /**
+     * Nombre: colorDelEstado
+     * Entradas: estado, nombre del estado del proceso
+     * Salidas: el color con que debe mostrarse ese estado
+     * Restricciones: ninguna
+     * Descripcion: rojo si el proceso quedo bloqueado por un error, gris si no
+     *              hay programa cargado, y verde en cualquier otro caso, que
+     *              son los estados en que el proceso avanza con normalidad.
+     */
+    private Color colorDelEstado(String estado) {
+        if ("BLOQUEADO_ERROR".equals(estado)) {
+            return ESTADO_ERROR;
+        }
+        if ("SIN PROGRAMA".equals(estado) || "-".equals(estado)) {
+            return ESTADO_NEUTRO;
+        }
+        return ESTADO_ACTIVO;
     }
 
     /**
@@ -157,6 +273,7 @@ public class VentanaPrincipal extends javax.swing.JFrame implements VistaPrincip
         lblPidValor.setText(String.valueOf(bcp.getPid()));
         lblProgramaValor.setText(bcp.getNombrePrograma());
         lblEstadoBcpValor.setText(bcp.getEstado().name());
+        lblEstadoBcpValor.setForeground(colorDelEstado(bcp.getEstado().name()));
         lblPcValor.setText(String.valueOf(bcp.getPc()));
         lblIrBinValor.setText(bcp.getIrBinario());
         lblIrTextoValor.setText(bcp.getIrTexto().isEmpty() ? "-" : bcp.getIrTexto());
@@ -168,6 +285,8 @@ public class VentanaPrincipal extends javax.swing.JFrame implements VistaPrincip
         lblBaseValor.setText(String.valueOf(bcp.getDireccionBase()));
         lblLimiteValor.setText(bcp.getLimite() + " posiciones");
         lblEjecutadasValor.setText(String.valueOf(bcp.getInstruccionesEjecutadas()));
+        lblCiclosValor.setText(String.valueOf(bcp.getCiclosReloj()));
+        lblHoraCreacionValor.setText(bcp.getHoraCreacion().format(HORA));
     }
 
     /**
@@ -182,6 +301,7 @@ public class VentanaPrincipal extends javax.swing.JFrame implements VistaPrincip
         lblPidValor.setText("-");
         lblProgramaValor.setText("-");
         lblEstadoBcpValor.setText("-");
+        lblEstadoBcpValor.setForeground(ESTADO_NEUTRO);
         lblPcValor.setText("-");
         lblIrBinValor.setText("-");
         lblIrTextoValor.setText("-");
@@ -193,6 +313,8 @@ public class VentanaPrincipal extends javax.swing.JFrame implements VistaPrincip
         lblBaseValor.setText("-");
         lblLimiteValor.setText("-");
         lblEjecutadasValor.setText("0");
+        lblCiclosValor.setText("0");
+        lblHoraCreacionValor.setText("-");
     }
 
     /**
@@ -268,6 +390,7 @@ public class VentanaPrincipal extends javax.swing.JFrame implements VistaPrincip
     public void actualizarBarraContexto(String nombreArchivo, String estado) {
         lblArchivoValor.setText(nombreArchivo);
         lblEstadoValor.setText(estado);
+        lblEstadoValor.setForeground(colorDelEstado(estado));
     }
 
     /**
@@ -403,6 +526,10 @@ public class VentanaPrincipal extends javax.swing.JFrame implements VistaPrincip
         pnlContabilidad = new javax.swing.JPanel();
         jLabel14 = new javax.swing.JLabel();
         lblEjecutadasValor = new javax.swing.JLabel();
+        jLabel15 = new javax.swing.JLabel();
+        lblCiclosValor = new javax.swing.JLabel();
+        jLabel16 = new javax.swing.JLabel();
+        lblHoraCreacionValor = new javax.swing.JLabel();
         pnlConsola = new javax.swing.JPanel();
         scrConsola = new javax.swing.JScrollPane();
         txtConsola = new javax.swing.JTextArea();
@@ -689,6 +816,18 @@ public class VentanaPrincipal extends javax.swing.JFrame implements VistaPrincip
         lblEjecutadasValor.setText("0");
         pnlContabilidad.add(lblEjecutadasValor);
 
+        jLabel15.setText("Ciclos de reloj:");
+        pnlContabilidad.add(jLabel15);
+
+        lblCiclosValor.setText("0");
+        pnlContabilidad.add(lblCiclosValor);
+
+        jLabel16.setText("Hora de creacion:");
+        pnlContabilidad.add(jLabel16);
+
+        lblHoraCreacionValor.setText("-");
+        pnlContabilidad.add(lblHoraCreacionValor);
+
         pnlBcpCampos.add(pnlContabilidad);
 
         pnlBcpInterior.add(pnlBcpCampos, java.awt.BorderLayout.NORTH);
@@ -817,6 +956,8 @@ public class VentanaPrincipal extends javax.swing.JFrame implements VistaPrincip
     private javax.swing.JLabel jLabel12;
     private javax.swing.JLabel jLabel13;
     private javax.swing.JLabel jLabel14;
+    private javax.swing.JLabel jLabel15;
+    private javax.swing.JLabel jLabel16;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
@@ -831,9 +972,11 @@ public class VentanaPrincipal extends javax.swing.JFrame implements VistaPrincip
     private javax.swing.JLabel lblAxValor;
     private javax.swing.JLabel lblBaseValor;
     private javax.swing.JLabel lblBxValor;
+    private javax.swing.JLabel lblCiclosValor;
     private javax.swing.JLabel lblCxValor;
     private javax.swing.JLabel lblDxValor;
     private javax.swing.JLabel lblEjecutadasValor;
+    private javax.swing.JLabel lblHoraCreacionValor;
     private javax.swing.JLabel lblEstado;
     private javax.swing.JLabel lblEstadoBcpValor;
     private javax.swing.JLabel lblEstadoValor;
