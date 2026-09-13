@@ -3,7 +3,7 @@
 ### 2024108270 Keyner Cerdas Morales
 
 ### Estado del proyecto: 1
-### Enlace del video: [(https://youtu.be/hx8HYF0uV9c)]
+### Enlace del video: [Ver en YouTube](https://youtu.be/hx8HYF0uV9c)
 
 
 ---
