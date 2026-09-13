@@ -8,8 +8,7 @@ import com.mycompany.minipc.util.BinUtil;
  * Salidas: no aplica
  * Restricciones: la palabra almacenada se recorta siempre a dieciseis bits
  * Descripcion: una posicion de memoria del Mini PC. Cada celda guarda una
- *              palabra de dieciseis bits. El enunciado pide que cada linea de
- *              programa ocupe una posicion, y una instruccion codificada cabe
+ *              palabra de dieciseis bits y una instruccion codificada cabe
  *              completa en una palabra, asi que la correspondencia es directa:
  *              una linea, una celda. La etiqueta conserva el texto original
  *              de la instruccion para mostrarlo en la tabla de memoria, como

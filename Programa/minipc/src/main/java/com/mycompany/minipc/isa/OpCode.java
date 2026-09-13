@@ -6,13 +6,8 @@ package com.mycompany.minipc.isa;
  * Salidas: no aplica
  * Restricciones: los codigos son los del enunciado y no deben cambiarse, ya
  *                que determinan el binario que se guarda en memoria
- * Descripcion: juego de instrucciones del Mini PC. El enunciado lista los
- *              opcodes con tres bits (001 LOAD, 010 STORE, 011 MOV, 100 SUB,
- *              101 ADD) pero los ejemplos binarios los muestran con cuatro
- *              (0001, 0010, 0011, 0100, 0101). Son el mismo valor con un
- *              cero a la izquierda: se usa la version de cuatro bits, que es
- *              la consistente con la figura 1.3d de Stallings y con las
- *              laminas del propio enunciado.
+ * Descripcion: juego de instrucciones del Mini PC. se usa la version de cuatro bits, que es
+ *              la consistente con la figura 1.3d de Stallings
  */
 public enum OpCode {
 

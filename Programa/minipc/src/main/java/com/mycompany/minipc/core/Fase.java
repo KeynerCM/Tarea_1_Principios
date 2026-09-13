@@ -6,8 +6,7 @@ package com.mycompany.minipc.core;
  * Salidas: no aplica
  * Restricciones: ninguna
  * Descripcion: momento del ciclo de instruccion en que el procesador avisa a
- *              sus observadores. FETCH y EXECUTE son las dos etapas que
- *              describe la figura 1.2 de Stallings. CARGA y REINICIO no son
+ *              sus observadores. FETCH y EXECUTE,CARGA y REINICIO no son
  *              etapas del ciclo, pero son los otros momentos en que la
  *              interfaz necesita refrescarse.
  */

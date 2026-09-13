@@ -1,5 +1,12 @@
 package com.mycompany.minipc.gui;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
+
+import javax.swing.Timer;
+
 import com.mycompany.minipc.core.Estadisticas;
 import com.mycompany.minipc.core.Fase;
 import com.mycompany.minipc.core.ObservadorCPU;
@@ -14,12 +21,6 @@ import com.mycompany.minipc.gui.modelo.RenderZonaMemoria;
 import com.mycompany.minipc.io.CargadorASM;
 import com.mycompany.minipc.isa.Ensamblador;
 import com.mycompany.minipc.isa.Instruccion;
-
-import javax.swing.Timer;
-import java.io.File;
-import java.io.IOException;
-import java.util.Collections;
-import java.util.List;
 
 /**
  * Nombre: ControladorPrincipal
@@ -86,10 +87,8 @@ public class ControladorPrincipal implements ObservadorCPU {
         this.cpu.agregarObservador(this);
     }
 
-    // ------------------------------------------------------------------
     // Acciones de los botones
-    // ------------------------------------------------------------------
-
+    
     /**
      * Nombre: alCargarArchivo
      * Entradas: ninguna; el archivo lo pide a la vista

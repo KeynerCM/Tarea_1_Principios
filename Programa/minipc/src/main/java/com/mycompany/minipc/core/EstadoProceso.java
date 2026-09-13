@@ -8,8 +8,7 @@ package com.mycompany.minipc.core;
  *                estados suspendidos ni una cola de listos con varios
  *                procesos
  * Descripcion: estados por los que pasa el proceso cargado en el Mini PC.
- *              Corresponden al modelo de cinco estados del capitulo 3 de
- *              Stallings. Las transiciones que ocurren son:
+ *              Corresponden al modelo de cinco estados. Las transiciones que ocurren son:
  *              NUEVO a LISTO al terminar de cargarse en memoria;
  *              LISTO a EJECUCION al ejecutarse la primera instruccion;
  *              EJECUCION a TERMINADO al pasar el PC la ultima instruccion;

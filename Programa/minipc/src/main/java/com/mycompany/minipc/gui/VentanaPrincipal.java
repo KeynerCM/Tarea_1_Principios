@@ -196,10 +196,7 @@ public class VentanaPrincipal extends javax.swing.JFrame implements VistaPrincip
         }
     }
 
-    // ------------------------------------------------------------------
-    // Implementacion de VistaPrincipal
-    // ------------------------------------------------------------------
-
+ 
     /**
      * Nombre: mostrarInstrucciones
      * Entradas: programa, instrucciones traducidas en orden

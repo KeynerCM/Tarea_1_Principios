@@ -1,10 +1,10 @@
 package com.mycompany.minipc.isa;
 
-import com.mycompany.minipc.excepciones.SintaxisException;
-import com.mycompany.minipc.util.BinUtil;
-
 import java.util.ArrayList;
 import java.util.List;
+
+import com.mycompany.minipc.excepciones.SintaxisException;
+import com.mycompany.minipc.util.BinUtil;
 
 /**
  * Nombre: Ensamblador
@@ -22,10 +22,8 @@ import java.util.List;
  */
 public class Ensamblador {
 
-    /** Marca de comentario de una linea al estilo ensamblador. */
     private static final String COMENTARIO_PUNTO_COMA = ";";
 
-    /** Marca de comentario de una linea al estilo Java. */
     private static final String COMENTARIO_BARRAS = "//";
 
     /**
@@ -78,7 +76,6 @@ public class Ensamblador {
      *              luego lee operacion, registro y operando en ese orden.
      */
     private Instruccion ensamblarLinea(String linea, int numeroLinea) throws SintaxisException {
-        // La coma es separador opcional: MOV AX, 5 y MOV AX 5 son equivalentes.
         String[] tokens = linea.replace(',', ' ').trim().split("\\s+");
 
         OpCode opcode = leerOpcode(tokens[0], numeroLinea);

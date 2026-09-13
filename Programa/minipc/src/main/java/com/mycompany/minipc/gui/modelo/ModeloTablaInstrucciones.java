@@ -1,10 +1,11 @@
 package com.mycompany.minipc.gui.modelo;
 
-import com.mycompany.minipc.isa.Instruccion;
-
-import javax.swing.table.AbstractTableModel;
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.swing.table.AbstractTableModel;
+
+import com.mycompany.minipc.isa.Instruccion;
 
 /**
  * Nombre: ModeloTablaInstrucciones
@@ -13,8 +14,7 @@ import java.util.List;
  * Restricciones: las celdas no son editables; el modelo guarda su propia
  *                copia de la lista
  * Descripcion: modelo de la tabla de instrucciones, que muestra el programa
- *              fuente junto a su traduccion binaria como en la maqueta del
- *              enunciado. Las columnas son el numero de orden, la instruccion
+ *              fuente junto a su traduccion binaria. Las columnas son el numero de orden, la instruccion
  *              tal como fue escrita y su codificacion de dieciseis bits.
  */
 public class ModeloTablaInstrucciones extends AbstractTableModel {

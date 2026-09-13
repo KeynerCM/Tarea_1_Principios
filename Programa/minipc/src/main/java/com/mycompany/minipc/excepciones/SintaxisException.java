@@ -13,8 +13,7 @@ import java.util.List;
  *              ensamblador no se detiene en el primer problema: recorre todo
  *              el archivo, junta lo que encuentra y lo reporta de una sola
  *              vez, para que el usuario corrija en una pasada en lugar de
- *              descubrir los errores uno por uno. Por eso la excepcion lleva
- *              una lista y no un solo mensaje.
+ *              descubrir los errores uno por uno. 
  */
 public class SintaxisException extends Exception {
 
