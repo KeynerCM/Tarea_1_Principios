@@ -619,7 +619,7 @@ public class VentanaPrincipal extends javax.swing.JFrame implements VistaPrincip
     }//GEN-LAST:event_btnLimpiarActionPerformed
 
     private void btnConfigActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnConfigActionPerformed
-        escribirEnConsola("El dialogo de configuracion todavia no esta disponible.");
+        new DialogoConfiguracion(this, true, controlador).setVisible(true);
     }//GEN-LAST:event_btnConfigActionPerformed
 
     private void btnEstadisticasActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEstadisticasActionPerformed
