@@ -5,14 +5,18 @@ import com.mycompany.minipc.core.Memoria;
 import javax.swing.SpinnerNumberModel;
 
 /**
- * Dialogo de configuracion de la maquina.
- *
- * Permite cambiar el tamano total de la memoria, el limite entre la zona
- * de kernel y la de usuario, y la velocidad de la ejecucion automatica.
- *
- * Muestra en vivo como queda repartida la memoria segun lo que se elija,
- * y deshabilita el boton Aceptar mientras la combinacion no sea valida,
- * en lugar de dejar equivocarse y reclamar despues.
+ * Nombre: DialogoConfiguracion
+ * Entradas: la ventana padre y el controlador al que aplicar los cambios
+ * Salidas: la nueva configuracion, entregada al controlador al aceptar
+ * Restricciones: aplicar la configuracion descarga el programa cargado,
+ *                porque redimensionar la memoria invalida las direcciones ya
+ *                asignadas
+ * Descripcion: dialogo de configuracion de la maquina. Permite cambiar el
+ *              tamano total de la memoria, el limite entre la zona de kernel
+ *              y la de usuario, y la velocidad de la ejecucion automatica.
+ *              Muestra en vivo como queda repartida la memoria segun lo que se
+ *              elija, y deshabilita el boton Aceptar mientras la combinacion
+ *              no sea valida, en lugar de dejar equivocarse y reclamar despues.
  */
 public class DialogoConfiguracion extends javax.swing.JDialog {
 
@@ -21,11 +25,17 @@ public class DialogoConfiguracion extends javax.swing.JDialog {
     private final ControladorPrincipal controlador;
 
     /**
-     * Crea el dialogo con los valores que la maquina tiene ahora.
-     *
-     * @param padre       ventana sobre la que se muestra
-     * @param modal       true para bloquear la ventana de atras
-     * @param controlador controlador al que se le aplicara la configuracion
+     * Nombre: DialogoConfiguracion
+     * Entradas: padre, ventana sobre la que se muestra; modal, true para
+     *           bloquear la ventana de atras; controlador, al que se le
+     *           aplicara la configuracion
+     * Salidas: el dialogo construido, con los valores actuales ya cargados
+     * Restricciones: el controlador no debe ser nulo, porque de el se leen los
+     *                valores de partida
+     * Descripcion: arma los componentes y les asigna los modelos de los
+     *              spinners. Esos modelos se crean aqui y no en el disenador
+     *              para que los limites queden junto a las constantes de
+     *              Memoria que los definen, en lugar de duplicados en el XML.
      */
     public DialogoConfiguracion(java.awt.Frame padre, boolean modal,
             ControladorPrincipal controlador) {
@@ -49,21 +59,53 @@ public class DialogoConfiguracion extends javax.swing.JDialog {
         setLocationRelativeTo(padre);
     }
 
+    /**
+     * Nombre: tamanoElegido
+     * Entradas: ninguna
+     * Salidas: el tamano de memoria seleccionado
+     * Restricciones: el spinner garantiza que el valor es un entero dentro de
+     *                su rango
+     * Descripcion: concentra la conversion del valor del spinner, que llega
+     *              como Object, para no repetir el casteo en cada uso.
+     */
     private int tamanoElegido() {
         return (Integer) spnTamano.getValue();
     }
 
+    /**
+     * Nombre: kernelElegido
+     * Entradas: ninguna
+     * Salidas: el limite de kernel seleccionado
+     * Restricciones: el spinner garantiza que el valor es un entero dentro de
+     *                su rango
+     * Descripcion: analogo a tamanoElegido, para el limite entre zonas.
+     */
     private int kernelElegido() {
         return (Integer) spnKernel.getValue();
     }
 
+    /**
+     * Nombre: velocidadElegida
+     * Entradas: ninguna
+     * Salidas: los milisegundos entre instrucciones seleccionados
+     * Restricciones: el spinner garantiza que el valor es un entero dentro de
+     *                su rango
+     * Descripcion: analogo a tamanoElegido, para la velocidad de ejecucion.
+     */
     private int velocidadElegida() {
         return (Integer) spnVelocidad.getValue();
     }
 
     /**
-     * Recalcula como queda repartida la memoria y avisa si la combinacion
-     * elegida no sirve.
+     * Nombre: actualizarResumen
+     * Entradas: ninguna; lee los valores actuales de los spinners
+     * Salidas: ninguna; actualiza las etiquetas y el estado del boton Aceptar
+     * Restricciones: ninguna
+     * Descripcion: recalcula como queda repartida la memoria y avisa si la
+     *              combinacion elegida no sirve. Cuando el limite de kernel
+     *              alcanza o supera el tamano total, borra el resumen, muestra
+     *              el aviso y deshabilita Aceptar, de modo que el error se
+     *              previene en vez de reclamarse despues.
      */
     private void actualizarResumen() {
         int tamano = tamanoElegido();
@@ -86,9 +128,15 @@ public class DialogoConfiguracion extends javax.swing.JDialog {
     }
 
     /**
-     * This method is called from within the constructor to initialize the form.
-     * WARNING: Do NOT modify this code. The content of this method is always
-     * regenerated by the Form Editor.
+     * Nombre: initComponents
+     * Entradas: ninguna
+     * Salidas: ninguna
+     * Restricciones: NO editar a mano. El disenador visual de NetBeans
+     *                regenera este metodo completo a partir del archivo .form
+     *                cada vez que se modifica el dialogo
+     * Descripcion: crea los componentes del dialogo, les fija sus propiedades,
+     *              los ubica en sus contenedores y conecta los eventos de los
+     *              spinners y de los tres botones.
      */
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
@@ -221,14 +269,40 @@ public class DialogoConfiguracion extends javax.swing.JDialog {
         setLocationRelativeTo(null);
     }// </editor-fold>//GEN-END:initComponents
 
+    /**
+     * Nombre: spnTamanoStateChanged
+     * Entradas: evt, evento de cambio del spinner
+     * Salidas: ninguna
+     * Restricciones: ninguna
+     * Descripcion: recalcula el resumen cada vez que cambia el tamano de
+     *              memoria, para que la vista previa siga al usuario.
+     */
     private void spnTamanoStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_spnTamanoStateChanged
         actualizarResumen();
     }//GEN-LAST:event_spnTamanoStateChanged
 
+    /**
+     * Nombre: spnKernelStateChanged
+     * Entradas: evt, evento de cambio del spinner
+     * Salidas: ninguna
+     * Restricciones: ninguna
+     * Descripcion: recalcula el resumen cada vez que cambia el limite de
+     *              kernel.
+     */
     private void spnKernelStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_spnKernelStateChanged
         actualizarResumen();
     }//GEN-LAST:event_spnKernelStateChanged
 
+    /**
+     * Nombre: btnRestaurarActionPerformed
+     * Entradas: evt, evento de accion que genero el clic
+     * Salidas: ninguna
+     * Restricciones: no aplica nada todavia; solo cambia lo que muestran los
+     *                spinners
+     * Descripcion: devuelve los tres valores a los de arranque, tomandolos de
+     *              las constantes de Memoria y del controlador en lugar de
+     *              escribirlos aqui.
+     */
     private void btnRestaurarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnRestaurarActionPerformed
         spnTamano.setValue(Memoria.TAMANO_POR_DEFECTO);
         spnKernel.setValue(Memoria.LIMITE_KERNEL_POR_DEFECTO);
@@ -236,11 +310,27 @@ public class DialogoConfiguracion extends javax.swing.JDialog {
         actualizarResumen();
     }//GEN-LAST:event_btnRestaurarActionPerformed
 
+    /**
+     * Nombre: btnAceptarActionPerformed
+     * Entradas: evt, evento de accion que genero el clic
+     * Salidas: ninguna
+     * Restricciones: el boton solo esta habilitado si la combinacion es
+     *                valida, de modo que aqui no hace falta volver a validar
+     * Descripcion: aplica la configuracion a traves del controlador y cierra
+     *              el dialogo.
+     */
     private void btnAceptarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAceptarActionPerformed
         controlador.alConfigurar(tamanoElegido(), kernelElegido(), velocidadElegida());
         dispose();
     }//GEN-LAST:event_btnAceptarActionPerformed
 
+    /**
+     * Nombre: btnCancelarActionPerformed
+     * Entradas: evt, evento de accion que genero el clic
+     * Salidas: ninguna
+     * Restricciones: ninguna
+     * Descripcion: cierra el dialogo sin aplicar ningun cambio.
+     */
     private void btnCancelarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCancelarActionPerformed
         dispose();
     }//GEN-LAST:event_btnCancelarActionPerformed

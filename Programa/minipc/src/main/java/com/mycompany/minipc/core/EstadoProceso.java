@@ -1,19 +1,19 @@
 package com.mycompany.minipc.core;
 
 /**
- * Estados por los que pasa el proceso cargado en el Mini PC.
- *
- * Corresponden al modelo de cinco estados del capitulo 3 de Stallings.
- * El simulador no multiprograma, asi que no hay estado SUSPENDIDO ni cola
- * de listos con varios procesos, pero las transiciones que si ocurren son
- * las mismas y se muestran en el panel del BCP.
- *
- * Transiciones posibles:
- *
- *   NUEVO -> LISTO           al terminar de cargarse en memoria
- *   LISTO -> EJECUCION       al ejecutarse la primera instruccion
- *   EJECUCION -> TERMINADO   al pasar el PC la ultima instruccion
- *   EJECUCION -> BLOQUEADO_ERROR  ante un desbordamiento aritmetico
+ * Nombre: EstadoProceso
+ * Entradas: no aplica, es una enumeracion de valores fijos
+ * Salidas: no aplica
+ * Restricciones: el simulador no multiprograma, asi que no existen los
+ *                estados suspendidos ni una cola de listos con varios
+ *                procesos
+ * Descripcion: estados por los que pasa el proceso cargado en el Mini PC.
+ *              Corresponden al modelo de cinco estados del capitulo 3 de
+ *              Stallings. Las transiciones que ocurren son:
+ *              NUEVO a LISTO al terminar de cargarse en memoria;
+ *              LISTO a EJECUCION al ejecutarse la primera instruccion;
+ *              EJECUCION a TERMINADO al pasar el PC la ultima instruccion;
+ *              EJECUCION a BLOQUEADO_ERROR ante un desbordamiento aritmetico.
  */
 public enum EstadoProceso {
 
@@ -33,7 +33,14 @@ public enum EstadoProceso {
     BLOQUEADO_ERROR;
 
     /**
-     * @return true si el proceso ya no puede seguir ejecutando
+     * Nombre: esFinal
+     * Entradas: ninguna
+     * Salidas: true si el proceso ya no puede seguir ejecutando
+     * Restricciones: ninguna
+     * Descripcion: agrupa TERMINADO y BLOQUEADO_ERROR, que son distintos para
+     *              el usuario pero equivalentes para el procesador: en ambos
+     *              casos paso() deja de avanzar. Tenerlo en un metodo evita
+     *              repetir la comparacion doble por todo el codigo.
      */
     public boolean esFinal() {
         return this == TERMINADO || this == BLOQUEADO_ERROR;

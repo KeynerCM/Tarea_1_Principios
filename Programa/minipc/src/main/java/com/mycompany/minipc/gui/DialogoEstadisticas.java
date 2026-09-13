@@ -9,13 +9,16 @@ import com.mycompany.minipc.isa.OpCode;
 import javax.swing.JProgressBar;
 
 /**
- * Resumen de la ejecucion.
- *
- * Muestra tres cosas: el estado en que quedo el proceso, cuantas veces se
- * ejecuto cada operacion, y el detalle de accesos y tiempos.
- *
- * El reparto por operacion se dibuja con barras de proporcion en lugar de
- * solo numeros, para que se vea de un golpe cual domina el programa.
+ * Nombre: DialogoEstadisticas
+ * Entradas: la ventana padre y el controlador del que se leen los datos
+ * Salidas: la presentacion en pantalla del resumen de la ejecucion
+ * Restricciones: toma una foto de los datos al abrirse; si la ejecucion
+ *                continua despues, hay que volver a abrirlo para verla
+ * Descripcion: resumen de la ejecucion. Muestra tres cosas: el estado en que
+ *              quedo el proceso, cuantas veces se ejecuto cada operacion, y el
+ *              detalle de accesos y tiempos. El reparto por operacion se
+ *              dibuja con barras de proporcion en lugar de solo numeros, para
+ *              que se vea de un golpe cual domina el programa.
  */
 public class DialogoEstadisticas extends javax.swing.JDialog {
 
@@ -24,11 +27,15 @@ public class DialogoEstadisticas extends javax.swing.JDialog {
     private final ModeloTablaEstadisticas modelo;
 
     /**
-     * Crea el dialogo con los datos de la ejecucion actual.
-     *
-     * @param padre       ventana sobre la que se muestra
-     * @param modal       true para bloquear la ventana de atras
-     * @param controlador controlador del que se toman los datos
+     * Nombre: DialogoEstadisticas
+     * Entradas: padre, ventana sobre la que se muestra; modal, true para
+     *           bloquear la ventana de atras; controlador, del que se toman
+     *           los datos
+     * Salidas: el dialogo construido y ya poblado
+     * Restricciones: el controlador no debe ser nulo; el BCP si puede serlo, y
+     *                en ese caso el encabezado muestra guiones
+     * Descripcion: arma los componentes y llena de una vez las tres secciones
+     *              con los datos actuales del procesador.
      */
     public DialogoEstadisticas(java.awt.Frame padre, boolean modal,
             ControladorPrincipal controlador) {
@@ -50,6 +57,15 @@ public class DialogoEstadisticas extends javax.swing.JDialog {
         setLocationRelativeTo(padre);
     }
 
+    /**
+     * Nombre: llenarEncabezado
+     * Entradas: cpu, procesador del que se leen el BCP y la memoria
+     * Salidas: ninguna; actualiza las etiquetas y la barra del resumen
+     * Restricciones: tolera que el BCP sea nulo
+     * Descripcion: muestra el programa, el estado final del proceso y la
+     *              ocupacion de la zona de usuario, esta ultima con el
+     *              porcentaje y las cifras absolutas a la vez.
+     */
     private void llenarEncabezado(Procesador cpu) {
         BCP bcp = cpu.getBcp();
         lblProgramaValor.setText(bcp != null ? bcp.getNombrePrograma() : "-");
@@ -63,7 +79,13 @@ public class DialogoEstadisticas extends javax.swing.JDialog {
     }
 
     /**
-     * Dibuja una barra por operacion, proporcional al total ejecutado.
+     * Nombre: llenarOperaciones
+     * Entradas: datos, contabilidad de la ejecucion
+     * Salidas: ninguna; actualiza las cinco barras y sus etiquetas
+     * Restricciones: ninguna
+     * Descripcion: dibuja una barra por operacion, proporcional al total
+     *              ejecutado, que es el grafico de barras por tipo de
+     *              operacion que pedia el diseno.
      */
     private void llenarOperaciones(Estadisticas datos) {
         int total = datos.getTotalInstrucciones();
@@ -74,6 +96,17 @@ public class DialogoEstadisticas extends javax.swing.JDialog {
         barra(pbSub, lblSubValor, datos.getConteo(OpCode.SUB), total);
     }
 
+    /**
+     * Nombre: barra
+     * Entradas: barra, indicador a ajustar; etiqueta, donde se escribe la
+     *           cifra; conteo, veces que se ejecuto la operacion; total,
+     *           instrucciones ejecutadas en total
+     * Salidas: ninguna
+     * Restricciones: si el total es cero el maximo se fuerza a uno, porque un
+     *                JProgressBar con maximo cero se dibuja mal
+     * Descripcion: ajusta una barra a la proporcion que representa la
+     *              operacion y escribe al lado el conteo y su porcentaje.
+     */
     private void barra(JProgressBar barra, javax.swing.JLabel etiqueta,
             int conteo, int total) {
         barra.setMaximum(Math.max(total, 1));
@@ -82,6 +115,18 @@ public class DialogoEstadisticas extends javax.swing.JDialog {
         etiqueta.setText(conteo + "  (" + porcentaje + " %)");
     }
 
+    /**
+     * Nombre: llenarDetalle
+     * Entradas: cpu, procesador del que se leen memoria y ciclos; datos,
+     *           contabilidad de la ejecucion
+     * Salidas: ninguna; llena la tabla de metricas
+     * Restricciones: llama a refrescar una sola vez al final, para no
+     *                redibujar la tabla por cada fila agregada
+     * Descripcion: agrega las diez metricas del detalle. La fila de escrituras
+     *              dice "en registros" y no "en memoria" porque en este juego
+     *              de instrucciones ninguna operacion escribe datos en una
+     *              direccion: STORE copia el acumulador a un registro.
+     */
     private void llenarDetalle(Procesador cpu, Estadisticas datos) {
         modelo.agregar("Instrucciones ejecutadas", datos.getTotalInstrucciones());
         modelo.agregar("Ciclos de reloj", cpu.getCiclosReloj());
@@ -101,9 +146,15 @@ public class DialogoEstadisticas extends javax.swing.JDialog {
     }
 
     /**
-     * This method is called from within the constructor to initialize the form.
-     * WARNING: Do NOT modify this code. The content of this method is always
-     * regenerated by the Form Editor.
+     * Nombre: initComponents
+     * Entradas: ninguna
+     * Salidas: ninguna
+     * Restricciones: NO editar a mano. El disenador visual de NetBeans
+     *                regenera este metodo completo a partir del archivo .form
+     *                cada vez que se modifica el dialogo
+     * Descripcion: crea los componentes del dialogo, les fija sus propiedades,
+     *              los ubica en sus contenedores y conecta el evento del boton
+     *              Cerrar.
      */
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
@@ -247,6 +298,14 @@ public class DialogoEstadisticas extends javax.swing.JDialog {
         setLocationRelativeTo(null);
     }// </editor-fold>//GEN-END:initComponents
 
+    /**
+     * Nombre: btnCerrarActionPerformed
+     * Entradas: evt, evento de accion que genero el clic
+     * Salidas: ninguna
+     * Restricciones: ninguna
+     * Descripcion: cierra el dialogo y devuelve el control a la ventana
+     *              principal.
+     */
     private void btnCerrarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCerrarActionPerformed
         dispose();
     }//GEN-LAST:event_btnCerrarActionPerformed

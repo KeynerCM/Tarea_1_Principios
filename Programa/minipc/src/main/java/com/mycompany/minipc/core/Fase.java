@@ -1,12 +1,15 @@
 package com.mycompany.minipc.core;
 
 /**
- * Momento del ciclo de instruccion en que el procesador avisa a sus
- * observadores.
- *
- * Las dos primeras son las etapas que describe la figura 1.2 de Stallings.
- * Las otras dos no son etapas del ciclo, pero son los momentos en que la
- * interfaz tambien necesita refrescarse.
+ * Nombre: Fase
+ * Entradas: no aplica, es una enumeracion de valores fijos
+ * Salidas: no aplica
+ * Restricciones: ninguna
+ * Descripcion: momento del ciclo de instruccion en que el procesador avisa a
+ *              sus observadores. FETCH y EXECUTE son las dos etapas que
+ *              describe la figura 1.2 de Stallings. CARGA y REINICIO no son
+ *              etapas del ciclo, pero son los otros momentos en que la
+ *              interfaz necesita refrescarse.
  */
 public enum Fase {
 

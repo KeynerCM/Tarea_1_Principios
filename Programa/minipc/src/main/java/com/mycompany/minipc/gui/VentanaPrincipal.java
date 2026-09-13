@@ -15,11 +15,16 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 /**
- * Ventana principal del simulador Mini PC.
- *
- * Implementa VistaPrincipal: el controlador le pide que muestre cosas y
- * ella solo dibuja. No contiene logica de simulacion; cada boton delega
- * en una sola llamada al controlador.
+ * Nombre: VentanaPrincipal
+ * Entradas: las acciones que el usuario pulsa sobre sus controles
+ * Salidas: la representacion en pantalla del estado del simulador
+ * Restricciones: no contiene logica de simulacion; cada boton delega en una
+ *                sola llamada al controlador
+ * Descripcion: ventana principal del simulador Mini PC. Implementa
+ *              VistaPrincipal, de modo que el controlador le pide que muestre
+ *              cosas y ella solo dibuja. Reune la barra de herramientas, la
+ *              tabla de instrucciones, la tabla de memoria, el panel del BCP y
+ *              la consola de actividad.
  */
 public class VentanaPrincipal extends javax.swing.JFrame implements VistaPrincipal {
 
@@ -34,7 +39,15 @@ public class VentanaPrincipal extends javax.swing.JFrame implements VistaPrincip
     private final ControladorPrincipal controlador;
 
     /**
-     * Crea la ventana y la deja lista para usarse.
+     * Nombre: VentanaPrincipal
+     * Entradas: ninguna
+     * Salidas: la ventana construida y lista para mostrarse
+     * Restricciones: debe crearse dentro del hilo de despacho de eventos de
+     *                Swing
+     * Descripcion: arma los componentes, crea el controlador, le asigna a cada
+     *              tabla su modelo y su renderer, ajusta los anchos de columna
+     *              y pide al controlador que deje la vista en su estado
+     *              inicial.
      */
     public VentanaPrincipal() {
         initComponents();
@@ -52,10 +65,14 @@ public class VentanaPrincipal extends javax.swing.JFrame implements VistaPrincip
     }
 
     /**
-     * Fija el ancho preferido de cada columna.
-     *
-     * @param columnas modelo de columnas de la tabla
-     * @param anchos   ancho deseado para cada una, en pixeles
+     * Nombre: ajustarAnchos
+     * Entradas: columnas, modelo de columnas de la tabla; anchos, ancho
+     *           deseado para cada una en pixeles
+     * Salidas: ninguna
+     * Restricciones: si el arreglo tiene mas entradas que columnas, las de mas
+     *                se ignoran
+     * Descripcion: fija el ancho preferido de cada columna, para que la
+     *              posicion no ocupe lo mismo que el binario.
      */
     private void ajustarAnchos(TableColumnModel columnas, int[] anchos) {
         for (int i = 0; i < anchos.length && i < columnas.getColumnCount(); i++) {
@@ -68,8 +85,14 @@ public class VentanaPrincipal extends javax.swing.JFrame implements VistaPrincip
     // ------------------------------------------------------------------
 
     /**
-     * El modelo de la tabla lo mantiene el controlador, asi que aqui solo
-     * hay que asegurarse de que la vista vuelva al principio de la lista.
+     * Nombre: mostrarInstrucciones
+     * Entradas: programa, instrucciones traducidas en orden
+     * Salidas: ninguna
+     * Restricciones: no usa el parametro, porque el modelo de la tabla lo
+     *                mantiene el controlador
+     * Descripcion: devuelve la tabla al principio de la lista y la redibuja,
+     *              que es lo unico que le corresponde hacer a la vista cuando
+     *              hay un programa nuevo.
      */
     @Override
     public void mostrarInstrucciones(List<Instruccion> programa) {
@@ -78,6 +101,15 @@ public class VentanaPrincipal extends javax.swing.JFrame implements VistaPrincip
         tblInstrucciones.repaint();
     }
 
+    /**
+     * Nombre: resaltarInstruccion
+     * Entradas: indiceFila, fila a resaltar, o -1 para no resaltar ninguna
+     * Salidas: ninguna
+     * Restricciones: un indice fuera de rango se ignora sin fallar
+     * Descripcion: redibuja la tabla, cuyo renderer ya sabe que fila destacar,
+     *              y desplaza la vista para que esa fila quede visible aunque
+     *              el programa sea mas largo que la ventana.
+     */
     @Override
     public void resaltarInstruccion(int indiceFila) {
         tblInstrucciones.repaint();
@@ -87,6 +119,16 @@ public class VentanaPrincipal extends javax.swing.JFrame implements VistaPrincip
         }
     }
 
+    /**
+     * Nombre: refrescarMemoria
+     * Entradas: ninguna
+     * Salidas: ninguna
+     * Restricciones: ninguna
+     * Descripcion: avisa al modelo de que su contenido cambio y desplaza la
+     *              tabla hasta la posicion que apunta el PC, para que el
+     *              usuario siga la ejecucion sin tener que buscarla entre las
+     *              256 filas.
+     */
     @Override
     public void refrescarMemoria() {
         ((AbstractTableModel) tblMemoria.getModel()).fireTableDataChanged();
@@ -97,6 +139,15 @@ public class VentanaPrincipal extends javax.swing.JFrame implements VistaPrincip
         }
     }
 
+    /**
+     * Nombre: mostrarBCP
+     * Entradas: bcp, bloque a mostrar, o nulo si no hay proceso
+     * Salidas: ninguna
+     * Restricciones: tolera el valor nulo, que ocurre tras descargar el
+     *                programa
+     * Descripcion: vuelca los catorce atributos del bloque de control en las
+     *              etiquetas del panel correspondiente.
+     */
     @Override
     public void mostrarBCP(BCP bcp) {
         if (bcp == null) {
@@ -120,7 +171,12 @@ public class VentanaPrincipal extends javax.swing.JFrame implements VistaPrincip
     }
 
     /**
-     * Deja los catorce campos del BCP en blanco, cuando no hay proceso.
+     * Nombre: limpiarBCP
+     * Entradas: ninguna
+     * Salidas: ninguna
+     * Restricciones: ninguna
+     * Descripcion: deja los catorce campos del BCP en su valor de reposo,
+     *              cuando no hay ningun proceso cargado.
      */
     private void limpiarBCP() {
         lblPidValor.setText("-");
@@ -139,23 +195,57 @@ public class VentanaPrincipal extends javax.swing.JFrame implements VistaPrincip
         lblEjecutadasValor.setText("0");
     }
 
+    /**
+     * Nombre: escribirEnConsola
+     * Entradas: mensaje, texto a registrar
+     * Salidas: ninguna
+     * Restricciones: ninguna
+     * Descripcion: agrega la linea precedida de la hora y desplaza el cursor
+     *              al final, para que lo ultimo escrito quede siempre a la
+     *              vista.
+     */
     @Override
     public void escribirEnConsola(String mensaje) {
         txtConsola.append("[" + LocalTime.now().format(HORA) + "] " + mensaje + "\n");
         txtConsola.setCaretPosition(txtConsola.getDocument().getLength());
     }
 
+    /**
+     * Nombre: limpiarConsola
+     * Entradas: ninguna
+     * Salidas: ninguna
+     * Restricciones: ninguna
+     * Descripcion: vacia el area de texto del registro de actividad.
+     */
     @Override
     public void limpiarConsola() {
         txtConsola.setText("");
     }
 
+    /**
+     * Nombre: mostrarErrores
+     * Entradas: titulo, encabezado del cuadro; mensajes, errores a mostrar
+     * Salidas: ninguna
+     * Restricciones: bloquea la ventana hasta que el usuario cierre el cuadro
+     * Descripcion: muestra todos los errores juntos, uno por linea, en un
+     *              cuadro de dialogo modal.
+     */
     @Override
     public void mostrarErrores(String titulo, List<String> mensajes) {
         JOptionPane.showMessageDialog(this, String.join("\n", mensajes),
                 titulo, JOptionPane.ERROR_MESSAGE);
     }
 
+    /**
+     * Nombre: actualizarBotones
+     * Entradas: hayPrograma, enEjecucion y termino, que describen la situacion
+     * Salidas: ninguna
+     * Restricciones: ninguna
+     * Descripcion: decide la habilitacion de los siete botones. Durante la
+     *              ejecucion automatica se bloquea todo menos lo que no
+     *              interfiere, y al terminar se vuelven a habilitar reiniciar,
+     *              limpiar y estadisticas.
+     */
     @Override
     public void actualizarBotones(boolean hayPrograma, boolean enEjecucion, boolean termino) {
         btnCargar.setEnabled(!enEjecucion);
@@ -167,18 +257,40 @@ public class VentanaPrincipal extends javax.swing.JFrame implements VistaPrincip
         btnEstadisticas.setEnabled(hayPrograma && !enEjecucion);
     }
 
+    /**
+     * Nombre: actualizarBarraContexto
+     * Entradas: nombreArchivo, archivo cargado; estado, estado del proceso
+     * Salidas: ninguna
+     * Restricciones: ninguna
+     * Descripcion: actualiza las dos etiquetas de la linea de contexto.
+     */
     @Override
     public void actualizarBarraContexto(String nombreArchivo, String estado) {
         lblArchivoValor.setText(nombreArchivo);
         lblEstadoValor.setText(estado);
     }
 
+    /**
+     * Nombre: actualizarUsoMemoria
+     * Entradas: porcentaje, ocupacion de la zona de usuario de 0 a 100
+     * Salidas: ninguna
+     * Restricciones: ninguna
+     * Descripcion: mueve la barra de progreso y escribe el porcentaje encima.
+     */
     @Override
     public void actualizarUsoMemoria(int porcentaje) {
         pbUsoMemoria.setValue(porcentaje);
         pbUsoMemoria.setString(porcentaje + " %");
     }
 
+    /**
+     * Nombre: seleccionarArchivoAsm
+     * Entradas: ninguna
+     * Salidas: el archivo elegido, o nulo si el usuario cancelo
+     * Restricciones: el selector solo ofrece archivos con extension .asm
+     * Descripcion: abre el selector de archivos ya posicionado en la carpeta
+     *              de ejemplos, para que el usuario no tenga que buscarla.
+     */
     @Override
     public File seleccionarArchivoAsm() {
         JFileChooser selector = new JFileChooser(carpetaInicial());
@@ -191,9 +303,14 @@ public class VentanaPrincipal extends javax.swing.JFrame implements VistaPrincip
     }
 
     /**
-     * Busca la carpeta de programas de ejemplo para abrir el dialogo ahi.
-     *
-     * @return la primera carpeta que exista, o null para usar la del usuario
+     * Nombre: carpetaInicial
+     * Entradas: ninguna
+     * Salidas: la primera carpeta de ejemplos que exista, o nulo
+     * Restricciones: devolver nulo hace que el selector abra en la carpeta del
+     *                usuario, que es un valor de respaldo aceptable
+     * Descripcion: prueba varias rutas relativas porque la carpeta de trabajo
+     *              cambia segun se ejecute desde el entorno de desarrollo o
+     *              desde el jar empaquetado.
      */
     private File carpetaInicial() {
         for (String ruta : CARPETAS_EJEMPLO) {
@@ -206,9 +323,16 @@ public class VentanaPrincipal extends javax.swing.JFrame implements VistaPrincip
     }
 
     /**
-     * This method is called from within the constructor to initialize the form.
-     * WARNING: Do NOT modify this code. The content of this method is always
-     * regenerated by the Form Editor.
+     * Nombre: initComponents
+     * Entradas: ninguna
+     * Salidas: ninguna
+     * Restricciones: NO editar a mano. El disenador visual de NetBeans
+     *                regenera este metodo completo a partir del archivo .form
+     *                cada vez que se modifica la ventana, de modo que
+     *                cualquier cambio manual se pierde
+     * Descripcion: crea los componentes de la ventana, les fija sus
+     *              propiedades, los ubica en sus contenedores y conecta los
+     *              eventos de los siete botones.
      */
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
@@ -598,30 +722,83 @@ public class VentanaPrincipal extends javax.swing.JFrame implements VistaPrincip
         setLocationRelativeTo(null);
     }// </editor-fold>//GEN-END:initComponents
 
+    /**
+     * Nombre: btnCargarActionPerformed
+     * Entradas: evt, evento de accion que genero el clic
+     * Salidas: ninguna
+     * Restricciones: ninguna
+     * Descripcion: delega en el controlador la carga de un archivo .asm.
+     */
     private void btnCargarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCargarActionPerformed
         controlador.alCargarArchivo();
     }//GEN-LAST:event_btnCargarActionPerformed
 
+    /**
+     * Nombre: btnEjecutarActionPerformed
+     * Entradas: evt, evento de accion que genero el clic
+     * Salidas: ninguna
+     * Restricciones: ninguna
+     * Descripcion: delega en el controlador el arranque de la ejecucion
+     *              automatica.
+     */
     private void btnEjecutarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEjecutarActionPerformed
         controlador.alEjecutar();
     }//GEN-LAST:event_btnEjecutarActionPerformed
 
+    /**
+     * Nombre: btnPasoActionPerformed
+     * Entradas: evt, evento de accion que genero el clic
+     * Salidas: ninguna
+     * Restricciones: ninguna
+     * Descripcion: delega en el controlador la ejecucion de una sola
+     *              instruccion.
+     */
     private void btnPasoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnPasoActionPerformed
         controlador.alPasoAPaso();
     }//GEN-LAST:event_btnPasoActionPerformed
 
+    /**
+     * Nombre: btnReiniciarActionPerformed
+     * Entradas: evt, evento de accion que genero el clic
+     * Salidas: ninguna
+     * Restricciones: ninguna
+     * Descripcion: delega en el controlador el reinicio del programa.
+     */
     private void btnReiniciarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnReiniciarActionPerformed
         controlador.alReiniciar();
     }//GEN-LAST:event_btnReiniciarActionPerformed
 
+    /**
+     * Nombre: btnLimpiarActionPerformed
+     * Entradas: evt, evento de accion que genero el clic
+     * Salidas: ninguna
+     * Restricciones: ninguna
+     * Descripcion: delega en el controlador el vaciado de la maquina.
+     */
     private void btnLimpiarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnLimpiarActionPerformed
         controlador.alLimpiar();
     }//GEN-LAST:event_btnLimpiarActionPerformed
 
+    /**
+     * Nombre: btnConfigActionPerformed
+     * Entradas: evt, evento de accion que genero el clic
+     * Salidas: ninguna
+     * Restricciones: el dialogo es modal, de modo que bloquea esta ventana
+     *                mientras este abierto
+     * Descripcion: abre el dialogo de configuracion de memoria y velocidad.
+     */
     private void btnConfigActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnConfigActionPerformed
         new DialogoConfiguracion(this, true, controlador).setVisible(true);
     }//GEN-LAST:event_btnConfigActionPerformed
 
+    /**
+     * Nombre: btnEstadisticasActionPerformed
+     * Entradas: evt, evento de accion que genero el clic
+     * Salidas: ninguna
+     * Restricciones: el dialogo es modal, de modo que bloquea esta ventana
+     *                mientras este abierto
+     * Descripcion: abre el dialogo con el resumen de la ejecucion.
+     */
     private void btnEstadisticasActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEstadisticasActionPerformed
         new DialogoEstadisticas(this, true, controlador).setVisible(true);
     }//GEN-LAST:event_btnEstadisticasActionPerformed

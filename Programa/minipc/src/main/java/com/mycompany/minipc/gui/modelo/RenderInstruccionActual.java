@@ -7,10 +7,15 @@ import java.awt.Component;
 import java.awt.Font;
 
 /**
- * Pinta la tabla de instrucciones resaltando la que apunta el PC.
- *
- * Ver de un vistazo que instruccion sigue es lo que hace entendible la
- * ejecucion paso a paso, que es justamente lo que se evalua.
+ * Nombre: RenderInstruccionActual
+ * Entradas: la fila que apunta el PC, fijada desde afuera
+ * Salidas: el componente ya pintado que la tabla dibuja en cada celda
+ * Restricciones: solo tiene sentido aplicado a la tabla de instrucciones,
+ *                porque supone que la columna 2 contiene el binario
+ * Descripcion: pinta la tabla de instrucciones distinguiendo tres situaciones:
+ *              la instruccion que esta por ejecutarse, las que ya se
+ *              ejecutaron y las que faltan. Ver de un vistazo que instruccion
+ *              sigue es lo que hace entendible la ejecucion paso a paso.
  */
 public class RenderInstruccionActual extends DefaultTableCellRenderer {
 
@@ -30,16 +35,40 @@ public class RenderInstruccionActual extends DefaultTableCellRenderer {
     private int filaActual = -1;
 
     /**
-     * @param filaActual fila a resaltar, o -1 para no resaltar ninguna
+     * Nombre: setFilaActual
+     * Entradas: filaActual, fila a resaltar, o -1 para no resaltar ninguna
+     * Salidas: ninguna
+     * Restricciones: no redibuja la tabla; eso lo hace quien lo llama
+     * Descripcion: le indica al renderer cual es la instruccion que apunta el
+     *              PC, para que la proxima vez que se dibuje la destaque.
      */
     public void setFilaActual(int filaActual) {
         this.filaActual = filaActual;
     }
 
+    /**
+     * Nombre: getFilaActual
+     * Entradas: ninguna
+     * Salidas: la fila que se esta resaltando, o -1 si ninguna
+     * Restricciones: ninguna
+     * Descripcion: acceso de solo lectura al valor fijado.
+     */
     public int getFilaActual() {
         return filaActual;
     }
 
+    /**
+     * Nombre: getTableCellRendererComponent
+     * Entradas: tabla, valor de la celda, si esta seleccionada, si tiene el
+     *           foco, y la fila y columna que se estan dibujando
+     * Salidas: el componente con el formato ya aplicado
+     * Restricciones: si la fila esta seleccionada se respeta el color de
+     *                seleccion del sistema y no se pinta nada encima
+     * Descripcion: aplica fuente monoespaciada a la columna del binario, para
+     *              que los ceros y unos queden alineados, y despues elige el
+     *              color de fondo segun la fila sea la actual, una ya
+     *              ejecutada o una pendiente.
+     */
     @Override
     public Component getTableCellRendererComponent(JTable tabla, Object valor,
             boolean seleccionada, boolean tieneFoco, int fila, int columna) {

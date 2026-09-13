@@ -1,20 +1,19 @@
 package com.mycompany.minipc.core;
 
+import java.util.List;
+
 import com.mycompany.minipc.excepciones.MemoriaInsuficienteException;
 import com.mycompany.minipc.isa.Instruccion;
 
-import java.util.List;
-
 /**
- * Memoria principal del Mini PC, dividida en zona de kernel y zona de usuario.
- *
- * El mapa es el del enunciado:
- *
- *   0 .. limiteKernel-1    zona del sistema operativo
- *   limiteKernel .. tamano-1   zona del usuario, donde se carga el programa
- *
- * Cada posicion guarda una palabra de 16 bits, de modo que una linea de
- * programa ocupa exactamente una celda.
+ * Nombre: Memoria
+ * Entradas: el tamano total y el limite entre zonas
+ * Salidas: no aplica
+ * Restricciones: el tamano minimo es 128 posiciones, el limite de kernel es
+ *                de al menos 16 y siempre debe ser menor que el tamano total
+ * Descripcion: memoria principal del Mini PC, dividida en zona de kernel y
+ *              zona de usuario. Cada posicion guarda una palabra de 16 bits,
+ *              de modo que una linea de programa ocupa exactamente una celda.
  */
 public class Memoria {
 
@@ -35,20 +34,29 @@ public class Memoria {
     private int limiteKernel;
 
     /**
-     * Crea la memoria con la configuracion por defecto: 256 posiciones y
-     * kernel de 0 a 63.
+     * Nombre: Memoria
+     * Entradas: ninguna
+     * Salidas: la memoria construida con la configuracion por defecto
+     * Restricciones: ninguna
+     * Descripcion: crea la memoria con 256 posiciones y kernel de 0 a 63, que
+     *              es el supuesto de la lamina 6 del enunciado.
      */
     public Memoria() {
         redimensionar(TAMANO_POR_DEFECTO, LIMITE_KERNEL_POR_DEFECTO);
     }
 
     /**
-     * Cambia el tamano de la memoria y el limite entre zonas. Descarta
-     * todo el contenido anterior.
-     *
-     * @param tamano       cantidad total de posiciones, al menos 128
-     * @param limiteKernel primera direccion de la zona de usuario
-     * @throws IllegalArgumentException si los valores no son coherentes
+     * Nombre: redimensionar
+     * Entradas: tamano, cantidad total de posiciones; limiteKernel, primera
+     *           direccion de la zona de usuario
+     * Salidas: ninguna
+     * Restricciones: el tamano debe ser de al menos 128, el limite de kernel
+     *                de al menos 16, y el limite debe ser menor que el tamano;
+     *                si no, lanza IllegalArgumentException. Descarta todo el
+     *                contenido anterior
+     * Descripcion: reconstruye el arreglo de celdas y marca como reservadas
+     *              las que caen en la zona del sistema operativo. Es final
+     *              porque el constructor la invoca.
      */
     public final void redimensionar(int tamano, int limiteKernel) {
         if (tamano < TAMANO_MINIMO) {
@@ -77,34 +85,60 @@ public class Memoria {
         }
     }
 
+    /**
+     * Nombre: getTamano
+     * Entradas: ninguna
+     * Salidas: cantidad total de posiciones de la memoria
+     * Restricciones: ninguna
+     * Descripcion: acceso de solo lectura a la configuracion actual.
+     */
     public int getTamano() {
         return tamano;
     }
 
+    /**
+     * Nombre: getLimiteKernel
+     * Entradas: ninguna
+     * Salidas: primera direccion de la zona de usuario
+     * Restricciones: ninguna
+     * Descripcion: acceso de solo lectura a la configuracion actual.
+     */
     public int getLimiteKernel() {
         return limiteKernel;
     }
 
     /**
-     * @return cuantas posiciones tiene la zona de usuario
+     * Nombre: getEspacioUsuario
+     * Entradas: ninguna
+     * Salidas: cuantas posiciones tiene la zona de usuario
+     * Restricciones: ninguna
+     * Descripcion: es el tamano total menos el limite de kernel. Determina el
+     *              programa mas largo que se puede cargar.
      */
     public int getEspacioUsuario() {
         return tamano - limiteKernel;
     }
 
     /**
-     * @param direccion posicion a evaluar
-     * @return true si pertenece a la zona del sistema operativo
+     * Nombre: esDireccionKernel
+     * Entradas: direccion, posicion a evaluar
+     * Salidas: true si pertenece a la zona del sistema operativo
+     * Restricciones: una direccion negativa devuelve false, no falla
+     * Descripcion: lo consultan el renderer de la tabla y la lectura en modo
+     *              usuario, para decidir color y permiso respectivamente.
      */
     public boolean esDireccionKernel(int direccion) {
         return direccion >= 0 && direccion < limiteKernel;
     }
 
     /**
-     * Comprueba que el programa quepa en la zona de usuario.
-     *
-     * @param lineasRequeridas cantidad de posiciones que ocupa el programa
-     * @throws MemoriaInsuficienteException si no hay espacio suficiente
+     * Nombre: validarEspacio
+     * Entradas: lineasRequeridas, cantidad de posiciones que ocupa el programa
+     * Salidas: ninguna si hay espacio
+     * Restricciones: lanza MemoriaInsuficienteException si el programa no cabe
+     * Descripcion: comprueba contra el espacio de la zona de usuario. Es el
+     *              requisito del enunciado de validar que exista el espacio
+     *              requerido antes de cargar.
      */
     public void validarEspacio(int lineasRequeridas) throws MemoriaInsuficienteException {
         int disponibles = getEspacioUsuario();
@@ -114,14 +148,15 @@ public class Memoria {
     }
 
     /**
-     * Carga un programa al inicio de la zona de usuario.
-     *
-     * La operacion es atomica: primero valida el espacio y solo entonces
-     * limpia y escribe. Si no cabe, la memoria queda intacta.
-     *
-     * @param programa instrucciones ya ensambladas
-     * @return la direccion base donde quedo cargado
-     * @throws MemoriaInsuficienteException si el programa no cabe
+     * Nombre: cargarPrograma
+     * Entradas: programa, instrucciones ya ensambladas
+     * Salidas: la direccion base donde quedo cargado
+     * Restricciones: lanza MemoriaInsuficienteException si el programa no
+     *                cabe, y en ese caso la memoria queda intacta
+     * Descripcion: carga el programa al inicio de la zona de usuario. La
+     *              operacion es atomica: primero valida el espacio y solo
+     *              entonces limpia y escribe, de modo que un programa
+     *              demasiado largo no destruye el que ya estaba.
      */
     public int cargarPrograma(List<Instruccion> programa) throws MemoriaInsuficienteException {
         validarEspacio(programa.size());
@@ -137,12 +172,14 @@ public class Memoria {
     }
 
     /**
-     * Lee una posicion cualquiera, sin restriccion de zona. Lo usa la
-     * interfaz para mostrar la tabla de memoria completa.
-     *
-     * @param direccion posicion a leer
-     * @return la celda correspondiente
-     * @throws IndexOutOfBoundsException si la direccion no existe
+     * Nombre: leer
+     * Entradas: direccion, posicion a leer
+     * Salidas: la celda correspondiente
+     * Restricciones: lanza IndexOutOfBoundsException si la direccion no existe
+     * Descripcion: lectura sin restriccion de zona. La usa la interfaz para
+     *              mostrar la tabla de memoria completa, incluida la parte del
+     *              kernel, que el usuario debe poder ver aunque el proceso no
+     *              pueda leerla.
      */
     public CeldaMemoria leer(int direccion) {
         validarDireccion(direccion);
@@ -150,16 +187,15 @@ public class Memoria {
     }
 
     /**
-     * Lee una posicion en nombre del proceso de usuario.
-     *
-     * Ademas de validar el rango, rechaza el acceso a la zona del kernel.
-     * Es el equivalente didactico de una violacion de segmento: el proceso
-     * no puede leer la memoria del sistema operativo.
-     *
-     * @param direccion posicion a leer
-     * @return la celda correspondiente
-     * @throws IndexOutOfBoundsException si la direccion no existe
-     * @throws IllegalArgumentException  si la direccion es del kernel
+     * Nombre: leerComoUsuario
+     * Entradas: direccion, posicion a leer
+     * Salidas: la celda correspondiente
+     * Restricciones: lanza IndexOutOfBoundsException si la direccion no
+     *                existe, e IllegalArgumentException si pertenece al kernel
+     * Descripcion: lectura en nombre del proceso de usuario. Ademas de validar
+     *              el rango, rechaza el acceso a la zona del kernel. Es el
+     *              equivalente didactico de una violacion de segmento: el
+     *              proceso no puede leer la memoria del sistema operativo.
      */
     public CeldaMemoria leerComoUsuario(int direccion) {
         validarDireccion(direccion);
@@ -171,13 +207,13 @@ public class Memoria {
     }
 
     /**
-     * Escribe en una posicion cualquiera.
-     *
-     * @param direccion posicion a escribir
-     * @param palabra   los 16 bits a guardar
-     * @param tipo      para que queda destinada la celda
-     * @param etiqueta  texto legible a mostrar
-     * @throws IndexOutOfBoundsException si la direccion no existe
+     * Nombre: escribir
+     * Entradas: direccion, posicion a escribir; palabra, los 16 bits a
+     *           guardar; tipo, para que queda destinada la celda; etiqueta,
+     *           texto legible a mostrar
+     * Salidas: ninguna
+     * Restricciones: lanza IndexOutOfBoundsException si la direccion no existe
+     * Descripcion: escribe en cualquier posicion, sin restriccion de zona.
      */
     public void escribir(int direccion, int palabra, CeldaMemoria.Tipo tipo, String etiqueta) {
         validarDireccion(direccion);
@@ -185,7 +221,13 @@ public class Memoria {
     }
 
     /**
-     * Deja libre toda la zona de usuario. No toca la zona del kernel.
+     * Nombre: limpiarZonaUsuario
+     * Entradas: ninguna
+     * Salidas: ninguna
+     * Restricciones: no toca la zona del kernel; es final porque otros metodos
+     *                publicos la invocan
+     * Descripcion: deja libres todas las posiciones desde el limite de kernel
+     *              hasta el final de la memoria.
      */
     public final void limpiarZonaUsuario() {
         for (int i = limiteKernel; i < tamano; i++) {
@@ -194,7 +236,13 @@ public class Memoria {
     }
 
     /**
-     * @return cuantas posiciones de la zona de usuario estan ocupadas
+     * Nombre: getPosicionesUsadas
+     * Entradas: ninguna
+     * Salidas: cuantas posiciones de la zona de usuario estan ocupadas
+     * Restricciones: recorre la zona completa, de modo que su costo crece con
+     *                el tamano de la memoria
+     * Descripcion: cuenta las celdas que no estan libres, para las
+     *              estadisticas y la barra de ocupacion.
      */
     public int getPosicionesUsadas() {
         int usadas = 0;
@@ -207,13 +255,27 @@ public class Memoria {
     }
 
     /**
-     * @return porcentaje de la zona de usuario ocupado, de 0 a 100
+     * Nombre: getPorcentajeUso
+     * Entradas: ninguna
+     * Salidas: porcentaje de la zona de usuario ocupado, de 0 a 100
+     * Restricciones: devuelve cero si la zona de usuario no tiene posiciones
+     * Descripcion: se calcula sobre la zona de usuario y no sobre la memoria
+     *              total, porque el kernel esta siempre ocupado y contarlo
+     *              daria una cifra que nunca baja de cierto piso.
      */
     public int getPorcentajeUso() {
         int disponibles = getEspacioUsuario();
         return disponibles == 0 ? 0 : (getPosicionesUsadas() * 100) / disponibles;
     }
 
+    /**
+     * Nombre: validarDireccion
+     * Entradas: direccion, posicion a comprobar
+     * Salidas: ninguna si la direccion es valida
+     * Restricciones: lanza IndexOutOfBoundsException si queda fuera del rango
+     * Descripcion: comprobacion comun a todos los accesos, con un mensaje que
+     *              nombra el rango valido para que el error sea diagnosticable.
+     */
     private void validarDireccion(int direccion) {
         if (direccion < 0 || direccion >= tamano) {
             throw new IndexOutOfBoundsException("Direccion fuera de la memoria: " + direccion

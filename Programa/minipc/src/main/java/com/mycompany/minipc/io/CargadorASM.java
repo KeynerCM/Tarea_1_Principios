@@ -8,10 +8,15 @@ import java.nio.file.Files;
 import java.util.List;
 
 /**
- * Lee archivos de codigo ensamblador del disco.
- *
- * No interpreta el contenido: solo entrega las lineas de texto. Traducir
- * es tarea del Ensamblador.
+ * Nombre: CargadorASM
+ * Entradas: el archivo de codigo ensamblador elegido por el usuario
+ * Salidas: las lineas de texto de ese archivo
+ * Restricciones: solo acepta archivos con extension .asm; nunca escribe en
+ *                el disco, solo lee
+ * Descripcion: lee archivos de codigo ensamblador. No interpreta el
+ *              contenido: entrega las lineas tal como estan y traducirlas es
+ *              tarea del Ensamblador. Esa separacion permite ensamblar texto
+ *              que no venga de un archivo, por ejemplo en las pruebas.
  */
 public class CargadorASM {
 
@@ -19,16 +24,16 @@ public class CargadorASM {
     public static final String EXTENSION = "asm";
 
     /**
-     * Lee un archivo .asm completo.
-     *
-     * Intenta primero UTF-8. Si el archivo fue guardado con la codificacion
-     * de Windows, reintenta con ISO-8859-1 en lugar de fallar: el Bloc de
-     * notas de una maquina en espanol produce archivos asi.
-     *
-     * @param archivo archivo a leer
-     * @return las lineas del archivo, sin el salto de linea final
-     * @throws IOException              si el archivo no existe o no se puede leer
-     * @throws IllegalArgumentException si la extension no es .asm
+     * Nombre: leer
+     * Entradas: archivo, archivo a leer
+     * Salidas: las lineas del archivo, sin el salto de linea final
+     * Restricciones: lanza IOException si el archivo no existe, no es un
+     *                archivo o no se puede leer, e IllegalArgumentException si
+     *                la extension no es .asm
+     * Descripcion: lee un archivo .asm completo. Intenta primero UTF-8 y, si
+     *              el archivo fue guardado con la codificacion de Windows,
+     *              reintenta con ISO-8859-1 en lugar de fallar: el Bloc de
+     *              notas de una maquina en espanol produce archivos asi.
      */
     public List<String> leer(File archivo) throws IOException {
         validar(archivo);
@@ -40,11 +45,16 @@ public class CargadorASM {
     }
 
     /**
-     * Comprueba que el archivo se pueda leer y tenga la extension correcta.
-     *
-     * @param archivo archivo a evaluar
-     * @throws IOException              si no existe o no es un archivo legible
-     * @throws IllegalArgumentException si la extension no es .asm
+     * Nombre: validar
+     * Entradas: archivo, archivo a evaluar
+     * Salidas: ninguna si el archivo sirve
+     * Restricciones: lanza IllegalArgumentException si el archivo es nulo o
+     *                no tiene extension .asm, e IOException si no existe, no
+     *                es un archivo o no hay permiso de lectura
+     * Descripcion: comprueba una a una las condiciones que debe cumplir el
+     *              archivo, en orden de lo mas basico a lo mas especifico,
+     *              para que el mensaje de error senale la causa concreta y no
+     *              un fallo generico.
      */
     private void validar(File archivo) throws IOException {
         if (archivo == null) {
@@ -66,8 +76,14 @@ public class CargadorASM {
     }
 
     /**
-     * @param archivo archivo a evaluar
-     * @return true si el nombre termina en .asm, sin distinguir mayusculas
+     * Nombre: tieneExtensionValida
+     * Entradas: archivo, archivo a evaluar
+     * Salidas: true si el nombre termina en .asm
+     * Restricciones: un archivo nulo devuelve false en lugar de fallar
+     * Descripcion: comprueba la extension sin distinguir mayusculas, de modo
+     *              que PROGRAMA.ASM tambien se acepta. Es publico porque el
+     *              filtro del selector de archivos lo consulta antes de que
+     *              haya nada que leer.
      */
     public boolean tieneExtensionValida(File archivo) {
         return archivo != null

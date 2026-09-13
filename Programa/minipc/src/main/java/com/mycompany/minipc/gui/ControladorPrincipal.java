@@ -22,11 +22,15 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Coordina la ventana con el procesador.
- *
- * Es lo unico que conoce a los dos lados: recibe lo que el usuario pulsa,
- * se lo pide al nucleo, y refresca la vista cuando el nucleo avisa que
- * algo cambio. El nucleo nunca sabe que existe Swing.
+ * Nombre: ControladorPrincipal
+ * Entradas: la vista a la que da servicio y las acciones que el usuario pulsa
+ * Salidas: las actualizaciones que envia a la vista
+ * Restricciones: es lo unico que conoce a los dos lados; el nucleo nunca sabe
+ *                que existe Swing y la vista nunca conoce al procesador
+ * Descripcion: coordina la ventana con el procesador. Recibe lo que el usuario
+ *              pulsa, se lo pide al nucleo, y refresca la vista cuando el
+ *              nucleo avisa que algo cambio. Implementa ObservadorCPU para
+ *              enterarse de cada etapa del ciclo de instruccion.
  */
 public class ControladorPrincipal implements ObservadorCPU {
 
@@ -56,7 +60,15 @@ public class ControladorPrincipal implements ObservadorCPU {
     private String nombreArchivo;
 
     /**
-     * @param vista ventana a la que este controlador da servicio
+     * Nombre: ControladorPrincipal
+     * Entradas: vista, ventana a la que este controlador da servicio
+     * Salidas: el controlador construido
+     * Restricciones: la vista no debe ser nula; el controlador queda ya
+     *                registrado como observador del procesador
+     * Descripcion: crea el procesador, los modelos de tabla, los renderers y
+     *              el temporizador. Los renderers se crean aqui y no en la
+     *              ventana porque necesitan consultar la memoria, que vive
+     *              dentro del procesador.
      */
     public ControladorPrincipal(VistaPrincipal vista) {
         this.vista = vista;
@@ -79,10 +91,16 @@ public class ControladorPrincipal implements ObservadorCPU {
     // ------------------------------------------------------------------
 
     /**
-     * Pide un archivo, lo ensambla y lo carga en memoria.
-     *
-     * Si algo falla, no se carga nada: la memoria queda como estaba y el
-     * problema se informa al usuario con todo el detalle disponible.
+     * Nombre: alCargarArchivo
+     * Entradas: ninguna; el archivo lo pide a la vista
+     * Salidas: ninguna; deja el programa cargado y la vista actualizada
+     * Restricciones: si algo falla no se carga nada y la memoria queda como
+     *                estaba; si el usuario cancela el dialogo no ocurre nada
+     * Descripcion: encadena las cuatro etapas de la carga: elegir archivo,
+     *              leerlo, ensamblarlo y cargarlo en memoria. Cada tipo de
+     *              fallo se informa con su propio titulo, de modo que el
+     *              usuario sepa si el problema es del archivo, de su sintaxis
+     *              o del espacio disponible.
      */
     public void alCargarArchivo() {
         File archivo = vista.seleccionarArchivoAsm();
@@ -119,7 +137,12 @@ public class ControladorPrincipal implements ObservadorCPU {
     }
 
     /**
-     * Arranca la ejecucion automatica hasta el final del programa.
+     * Nombre: alEjecutar
+     * Entradas: ninguna
+     * Salidas: ninguna; arranca el temporizador
+     * Restricciones: no hace nada si no hay programa, si ya termino, o si la
+     *                ejecucion automatica ya esta en marcha
+     * Descripcion: arranca la ejecucion automatica hasta el final del programa.
      */
     public void alEjecutar() {
         if (!cpu.hayPrograma() || cpu.haTerminado() || temporizador.isRunning()) {
@@ -131,7 +154,13 @@ public class ControladorPrincipal implements ObservadorCPU {
     }
 
     /**
-     * Ejecuta una sola instruccion.
+     * Nombre: alPasoAPaso
+     * Entradas: ninguna
+     * Salidas: ninguna
+     * Restricciones: no hace nada si no hay programa, si ya termino, o si la
+     *                ejecucion automatica esta en marcha
+     * Descripcion: ejecuta una sola instruccion, que es el modo de ejecucion
+     *              que el enunciado exige.
      */
     public void alPasoAPaso() {
         if (!cpu.hayPrograma() || cpu.haTerminado() || temporizador.isRunning()) {
@@ -141,7 +170,11 @@ public class ControladorPrincipal implements ObservadorCPU {
     }
 
     /**
-     * Vuelve al inicio del programa sin descargarlo.
+     * Nombre: alReiniciar
+     * Entradas: ninguna
+     * Salidas: ninguna
+     * Restricciones: detiene antes la ejecucion automatica si estaba corriendo
+     * Descripcion: vuelve al inicio del programa sin descargarlo de memoria.
      */
     public void alReiniciar() {
         detener();
@@ -154,7 +187,12 @@ public class ControladorPrincipal implements ObservadorCPU {
     }
 
     /**
-     * Descarga el programa y deja todo en blanco.
+     * Nombre: alLimpiar
+     * Entradas: ninguna
+     * Salidas: ninguna
+     * Restricciones: detiene antes la ejecucion automatica si estaba corriendo
+     * Descripcion: descarga el programa y deja la memoria de usuario, los
+     *              registros, las tablas y la consola en blanco.
      */
     public void alLimpiar() {
         detener();
@@ -168,12 +206,16 @@ public class ControladorPrincipal implements ObservadorCPU {
     }
 
     /**
-     * Aplica una nueva configuracion. Descarga el programa actual, porque
-     * redimensionar la memoria invalida las direcciones ya asignadas.
-     *
-     * @param tamanoMemoria cantidad total de posiciones
-     * @param limiteKernel  primera direccion de la zona de usuario
-     * @param velocidadMs   milisegundos entre instrucciones
+     * Nombre: alConfigurar
+     * Entradas: tamanoMemoria, cantidad total de posiciones; limiteKernel,
+     *           primera direccion de la zona de usuario; velocidadMs,
+     *           milisegundos entre instrucciones
+     * Salidas: ninguna
+     * Restricciones: si los valores no son coherentes se informa el error y no
+     *                se cambia nada; descarga siempre el programa actual
+     * Descripcion: aplica una nueva configuracion. El programa se descarga
+     *              porque redimensionar la memoria invalida las direcciones ya
+     *              asignadas.
      */
     public void alConfigurar(int tamanoMemoria, int limiteKernel, int velocidadMs) {
         detener();
@@ -200,6 +242,14 @@ public class ControladorPrincipal implements ObservadorCPU {
     // Ejecucion
     // ------------------------------------------------------------------
 
+    /**
+     * Nombre: alTicDelTemporizador
+     * Entradas: ninguna
+     * Salidas: ninguna
+     * Restricciones: se ejecuta en el hilo de despacho de eventos
+     * Descripcion: cada disparo del temporizador ejecuta una instruccion y, si
+     *              ya no quedan, detiene la ejecucion automatica.
+     */
     private void alTicDelTemporizador() {
         if (!ejecutarUnPaso()) {
             detener();
@@ -207,9 +257,17 @@ public class ControladorPrincipal implements ObservadorCPU {
     }
 
     /**
-     * Ejecuta una instruccion y atiende el caso de desbordamiento.
-     *
-     * @return true si queda alguna instruccion por ejecutar
+     * Nombre: ejecutarUnPaso
+     * Entradas: ninguna
+     * Salidas: true si queda alguna instruccion por ejecutar
+     * Restricciones: atrapa DesbordamientoException, de modo que el error no
+     *                se propaga hacia Swing
+     * Descripcion: ejecuta una instruccion y atiende los dos finales posibles:
+     *              que el programa termine normalmente o que se detenga por
+     *              desbordamiento. En el segundo caso el procesador ya dejo el
+     *              proceso en BLOQUEADO_ERROR y aviso a los observadores, asi
+     *              que la pantalla ya refleja el estado y aqui solo falta
+     *              informar al usuario.
      */
     private boolean ejecutarUnPaso() {
         try {
@@ -234,13 +292,17 @@ public class ControladorPrincipal implements ObservadorCPU {
     }
 
     /**
-     * Detiene la ejecucion automatica y refresca la vista.
-     *
-     * El refresco final no es opcional: mientras el temporizador corre, el
-     * procesador notifica a los observadores antes de que este metodo lo
-     * detenga, de modo que esas notificaciones ven todavia isRunning() en
-     * true y dejan los botones deshabilitados. Sin este ultimo refresco la
-     * ventana se queda bloqueada al terminar el programa.
+     * Nombre: detener
+     * Entradas: ninguna
+     * Salidas: ninguna
+     * Restricciones: no hace nada si el temporizador no estaba corriendo
+     * Descripcion: detiene la ejecucion automatica y refresca la vista. El
+     *              refresco final no es opcional: mientras el temporizador
+     *              corre, el procesador notifica a los observadores antes de
+     *              que este metodo lo detenga, de modo que esas notificaciones
+     *              ven todavia isRunning() en true y dejan los botones
+     *              deshabilitados. Sin este ultimo refresco la ventana se
+     *              queda bloqueada al terminar el programa.
      */
     private void detener() {
         if (temporizador.isRunning()) {
@@ -253,13 +315,30 @@ public class ControladorPrincipal implements ObservadorCPU {
     // Observador del procesador
     // ------------------------------------------------------------------
 
+    /**
+     * Nombre: alCambiarEstado
+     * Entradas: procesador, el que cambio de estado; fase, momento del ciclo
+     * Salidas: ninguna
+     * Restricciones: se invoca desde el hilo que ejecuta la instruccion
+     * Descripcion: el procesador avisa que algo cambio y el controlador se
+     *              limita a refrescar la vista completa. No distingue la fase
+     *              porque el refresco es el mismo en todas.
+     */
     @Override
     public void alCambiarEstado(Procesador procesador, Fase fase) {
         actualizarVista();
     }
 
     /**
-     * Vuelca el estado actual del procesador sobre la ventana.
+     * Nombre: actualizarVista
+     * Entradas: ninguna
+     * Salidas: ninguna
+     * Restricciones: ninguna
+     * Descripcion: vuelca el estado actual del procesador sobre la ventana:
+     *              resaltado, tabla de memoria, panel del BCP, barra de
+     *              contexto, ocupacion de memoria y estado de los botones.
+     *              Antes actualiza los renderers, que necesitan saber que fila
+     *              y que direccion destacar.
      */
     private void actualizarVista() {
         int indice = cpu.getIndiceInstruccionActual();
@@ -276,6 +355,15 @@ public class ControladorPrincipal implements ObservadorCPU {
                 cpu.haTerminado());
     }
 
+    /**
+     * Nombre: textoDelEstado
+     * Entradas: ninguna
+     * Salidas: el estado del proceso en texto
+     * Restricciones: ninguna
+     * Descripcion: devuelve el nombre del estado, o la leyenda SIN PROGRAMA
+     *              cuando no hay nada cargado, que no es un estado del proceso
+     *              sino la ausencia de proceso.
+     */
     private String textoDelEstado() {
         return cpu.hayPrograma() ? cpu.getEstado().name() : "SIN PROGRAMA";
     }
@@ -284,39 +372,93 @@ public class ControladorPrincipal implements ObservadorCPU {
     // Acceso para la ventana
     // ------------------------------------------------------------------
 
+    /**
+     * Nombre: getModeloInstrucciones
+     * Entradas: ninguna
+     * Salidas: el modelo de la tabla de instrucciones
+     * Restricciones: ninguna
+     * Descripcion: la ventana se lo asigna a su tabla al construirse.
+     */
     public ModeloTablaInstrucciones getModeloInstrucciones() {
         return modeloInstrucciones;
     }
 
+    /**
+     * Nombre: getModeloMemoria
+     * Entradas: ninguna
+     * Salidas: el modelo de la tabla de memoria
+     * Restricciones: ninguna
+     * Descripcion: la ventana se lo asigna a su tabla al construirse.
+     */
     public ModeloTablaMemoria getModeloMemoria() {
         return modeloMemoria;
     }
 
+    /**
+     * Nombre: getRenderInstrucciones
+     * Entradas: ninguna
+     * Salidas: el renderer que resalta la instruccion actual
+     * Restricciones: ninguna
+     * Descripcion: la ventana se lo asigna a su tabla al construirse.
+     */
     public RenderInstruccionActual getRenderInstrucciones() {
         return renderInstrucciones;
     }
 
+    /**
+     * Nombre: getRenderMemoria
+     * Entradas: ninguna
+     * Salidas: el renderer que colorea las zonas de memoria
+     * Restricciones: ninguna
+     * Descripcion: la ventana se lo asigna a su tabla al construirse.
+     */
     public RenderZonaMemoria getRenderMemoria() {
         return renderMemoria;
     }
 
+    /**
+     * Nombre: obtenerEstadisticas
+     * Entradas: ninguna
+     * Salidas: la contabilidad de la ejecucion
+     * Restricciones: ninguna
+     * Descripcion: la consulta el dialogo de estadisticas.
+     */
     public Estadisticas obtenerEstadisticas() {
         return cpu.getEstadisticas();
     }
 
+    /**
+     * Nombre: getProcesador
+     * Entradas: ninguna
+     * Salidas: el procesador que el controlador coordina
+     * Restricciones: ninguna
+     * Descripcion: lo necesitan los dialogos para leer la memoria y el BCP,
+     *              y las pruebas para verificar el resultado de la ejecucion.
+     */
     public Procesador getProcesador() {
         return cpu;
     }
 
     /**
-     * @return milisegundos configurados entre instrucciones
+     * Nombre: getVelocidadMs
+     * Entradas: ninguna
+     * Salidas: milisegundos configurados entre instrucciones
+     * Restricciones: ninguna
+     * Descripcion: el dialogo de configuracion lo usa para mostrar el valor
+     *              actual al abrirse.
      */
     public int getVelocidadMs() {
         return temporizador.getDelay();
     }
 
     /**
-     * Deja la ventana en su estado inicial, recien construida.
+     * Nombre: inicializarVista
+     * Entradas: ninguna
+     * Salidas: ninguna
+     * Restricciones: debe llamarse una vez, al final del constructor de la
+     *                ventana, cuando sus componentes ya existen
+     * Descripcion: deja la ventana en su estado inicial y escribe en la
+     *              consola la configuracion de memoria con la que arranco.
      */
     public void inicializarVista() {
         actualizarVista();

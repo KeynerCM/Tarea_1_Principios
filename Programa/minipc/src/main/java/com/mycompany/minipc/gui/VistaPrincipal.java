@@ -7,89 +7,133 @@ import java.io.File;
 import java.util.List;
 
 /**
- * Contrato entre el controlador y la ventana.
- *
- * El controlador programa siempre contra esta interfaz y nunca contra la
- * clase concreta. Asi la logica de la aplicacion no depende de como esta
- * construida la ventana, y se puede sustituir por una implementacion de
- * prueba sin levantar Swing.
+ * Nombre: VistaPrincipal
+ * Entradas: no aplica, es una interfaz
+ * Salidas: no aplica
+ * Restricciones: quien la implemente solo debe dibujar; ninguna de estas
+ *                operaciones debe contener logica de simulacion
+ * Descripcion: contrato entre el controlador y la ventana. El controlador
+ *              programa siempre contra esta interfaz y nunca contra la clase
+ *              concreta, de modo que la logica de la aplicacion no depende de
+ *              como esta construida la ventana y se puede sustituir por una
+ *              implementacion de prueba sin levantar Swing.
  */
 public interface VistaPrincipal {
 
     /**
-     * Llena la tabla de instrucciones con el programa recien ensamblado.
-     *
-     * @param programa instrucciones traducidas, en orden
+     * Nombre: mostrarInstrucciones
+     * Entradas: programa, instrucciones traducidas en orden
+     * Salidas: ninguna
+     * Restricciones: el modelo de la tabla lo mantiene el controlador, de modo
+     *                que la vista solo debe ocuparse de la presentacion
+     * Descripcion: avisa a la vista de que la tabla de instrucciones tiene
+     *              contenido nuevo que mostrar.
      */
     void mostrarInstrucciones(List<Instruccion> programa);
 
     /**
-     * Marca cual instruccion esta por ejecutarse.
-     *
-     * @param indiceFila fila a resaltar, o -1 para quitar el resaltado
+     * Nombre: resaltarInstruccion
+     * Entradas: indiceFila, fila a resaltar, o -1 para quitar el resaltado
+     * Salidas: ninguna
+     * Restricciones: un indice fuera de rango no debe provocar un fallo
+     * Descripcion: marca cual instruccion esta por ejecutarse y desplaza la
+     *              tabla para que quede a la vista.
      */
     void resaltarInstruccion(int indiceFila);
 
     /**
-     * Vuelve a dibujar la tabla de memoria, cuyo contenido cambio.
+     * Nombre: refrescarMemoria
+     * Entradas: ninguna
+     * Salidas: ninguna
+     * Restricciones: ninguna
+     * Descripcion: vuelve a dibujar la tabla de memoria, cuyo contenido
+     *              cambio. No recibe datos porque el modelo lee directamente
+     *              de la memoria del procesador.
      */
     void refrescarMemoria();
 
     /**
-     * Muestra el contenido del bloque de control de proceso.
-     *
-     * @param bcp bloque a mostrar, o null para dejar el panel en blanco
+     * Nombre: mostrarBCP
+     * Entradas: bcp, bloque a mostrar, o nulo para dejar el panel en blanco
+     * Salidas: ninguna
+     * Restricciones: debe tolerar el valor nulo, que ocurre tras descargar el
+     *                programa
+     * Descripcion: vuelca los atributos del bloque de control de proceso en el
+     *              panel correspondiente.
      */
     void mostrarBCP(BCP bcp);
 
     /**
-     * Agrega una linea al registro de actividad, con su hora.
-     *
-     * @param mensaje texto a mostrar
+     * Nombre: escribirEnConsola
+     * Entradas: mensaje, texto a mostrar
+     * Salidas: ninguna
+     * Restricciones: ninguna
+     * Descripcion: agrega una linea al registro de actividad, precedida de la
+     *              hora, y deja la vista al final del texto.
      */
     void escribirEnConsola(String mensaje);
 
     /**
-     * Vacia el registro de actividad.
+     * Nombre: limpiarConsola
+     * Entradas: ninguna
+     * Salidas: ninguna
+     * Restricciones: ninguna
+     * Descripcion: vacia el registro de actividad, como parte de la accion de
+     *              limpiar toda la maquina.
      */
     void limpiarConsola();
 
     /**
-     * Muestra una lista de errores en un cuadro de dialogo.
-     *
-     * @param titulo   titulo del cuadro
-     * @param mensajes errores a mostrar, uno por linea
+     * Nombre: mostrarErrores
+     * Entradas: titulo, encabezado del cuadro; mensajes, errores a mostrar
+     * Salidas: ninguna
+     * Restricciones: la lista puede tener un solo elemento o varios
+     * Descripcion: muestra los errores juntos en un cuadro de dialogo, uno por
+     *              linea, de modo que el usuario los corrija en una pasada.
      */
     void mostrarErrores(String titulo, List<String> mensajes);
 
     /**
-     * Habilita o deshabilita los botones segun la situacion actual.
-     *
-     * @param hayPrograma  hay un programa cargado en memoria
-     * @param enEjecucion  la ejecucion automatica esta en marcha
-     * @param termino      el programa llego al final o quedo bloqueado
+     * Nombre: actualizarBotones
+     * Entradas: hayPrograma, si hay un programa cargado; enEjecucion, si la
+     *           ejecucion automatica esta en marcha; termino, si el programa
+     *           llego al final o quedo bloqueado
+     * Salidas: ninguna
+     * Restricciones: ninguna
+     * Descripcion: habilita o deshabilita los botones segun la situacion
+     *              actual. Deshabilitar lo que no aplica es mejor practica de
+     *              interfaz que permitir el clic y despues reclamar.
      */
     void actualizarBotones(boolean hayPrograma, boolean enEjecucion, boolean termino);
 
     /**
-     * Actualiza la linea de contexto bajo la barra de herramientas.
-     *
-     * @param nombreArchivo nombre del archivo cargado
-     * @param estado        estado del proceso, en texto
+     * Nombre: actualizarBarraContexto
+     * Entradas: nombreArchivo, archivo cargado; estado, estado del proceso
+     * Salidas: ninguna
+     * Restricciones: ninguna
+     * Descripcion: actualiza la linea de contexto que aparece bajo la barra de
+     *              herramientas.
      */
     void actualizarBarraContexto(String nombreArchivo, String estado);
 
     /**
-     * Actualiza el indicador de ocupacion de la zona de usuario.
-     *
-     * @param porcentaje porcentaje ocupado, de 0 a 100
+     * Nombre: actualizarUsoMemoria
+     * Entradas: porcentaje, ocupacion de la zona de usuario de 0 a 100
+     * Salidas: ninguna
+     * Restricciones: el valor debe venir ya calculado; la vista no consulta la
+     *                memoria por su cuenta
+     * Descripcion: actualiza el indicador de ocupacion de la zona de usuario.
      */
     void actualizarUsoMemoria(int porcentaje);
 
     /**
-     * Pide al usuario que elija un archivo de codigo ensamblador.
-     *
-     * @return el archivo elegido, o null si cancelo
+     * Nombre: seleccionarArchivoAsm
+     * Entradas: ninguna
+     * Salidas: el archivo elegido, o nulo si el usuario cancelo
+     * Restricciones: debe filtrar por la extension .asm
+     * Descripcion: pide al usuario que elija un archivo de codigo ensamblador.
+     *              Devolver nulo al cancelar permite al controlador distinguir
+     *              esa situacion de un error real.
      */
     File seleccionarArchivoAsm();
 }
