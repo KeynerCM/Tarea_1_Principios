@@ -233,9 +233,19 @@ public class ControladorPrincipal implements ObservadorCPU {
         }
     }
 
+    /**
+     * Detiene la ejecucion automatica y refresca la vista.
+     *
+     * El refresco final no es opcional: mientras el temporizador corre, el
+     * procesador notifica a los observadores antes de que este metodo lo
+     * detenga, de modo que esas notificaciones ven todavia isRunning() en
+     * true y dejan los botones deshabilitados. Sin este ultimo refresco la
+     * ventana se queda bloqueada al terminar el programa.
+     */
     private void detener() {
         if (temporizador.isRunning()) {
             temporizador.stop();
+            actualizarVista();
         }
     }
 

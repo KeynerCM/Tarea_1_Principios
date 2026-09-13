@@ -623,7 +623,7 @@ public class VentanaPrincipal extends javax.swing.JFrame implements VistaPrincip
     }//GEN-LAST:event_btnConfigActionPerformed
 
     private void btnEstadisticasActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEstadisticasActionPerformed
-        escribirEnConsola("El dialogo de estadisticas todavia no esta disponible.");
+        new DialogoEstadisticas(this, true, controlador).setVisible(true);
     }//GEN-LAST:event_btnEstadisticasActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

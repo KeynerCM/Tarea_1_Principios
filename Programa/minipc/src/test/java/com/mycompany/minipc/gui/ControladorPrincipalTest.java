@@ -255,6 +255,29 @@ class ControladorPrincipalTest {
     }
 
     @Test
+    @DisplayName("Al terminar la ejecucion automatica los botones vuelven a habilitarse")
+    void ejecucionAutomaticaRehabilitaBotones(@TempDir Path carpeta) throws Exception {
+        controlador.alConfigurar(256, 64, 50);
+        vista.archivoAEntregar = ejemploDelEnunciado(carpeta);
+        controlador.alCargarArchivo();
+
+        controlador.alEjecutar();
+        assertTrue(vista.enEjecucion, "Mientras corre, los botones quedan bloqueados");
+
+        // Siete instrucciones a 50 ms tardan unos 350 ms; se espera con margen.
+        long limite = System.currentTimeMillis() + 5000;
+        while (vista.enEjecucion && System.currentTimeMillis() < limite) {
+            Thread.sleep(20);
+        }
+
+        assertFalse(vista.enEjecucion, "El temporizador debio detenerse y refrescar la vista");
+        assertTrue(vista.termino);
+        assertTrue(vista.hayPrograma, "El boton de estadisticas depende de esto");
+        assertEquals(3, controlador.getProcesador().getAc());
+        assertEquals(-8, bx());
+    }
+
+    @Test
     @DisplayName("Un desbordamiento detiene la ejecucion y avisa")
     void desbordamientoSeInforma(@TempDir Path carpeta) throws Exception {
         vista.archivoAEntregar = crearAsm(carpeta, "desborde.asm",
