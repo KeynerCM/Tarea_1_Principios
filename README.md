@@ -4,7 +4,7 @@
 
 ### Estado del proyecto: 1
 ### Enlace del video: [pendiente de agregar]
-Recordar que el video debe ser público y con sonido para ser visto por el profesor
+
 
 ---
 
@@ -14,8 +14,8 @@ Simulador visual del ciclo de instrucción de un procesador, basado en la máqui
 hipotética que describe Stallings en *Operating Systems: Internals and Design
 Principles*, 9na edición, capítulo 1.3.
 
-El programa lee un archivo de texto con instrucciones similares al lenguaje
-ensamblador, las traduce a binario, las carga en una memoria simulada y las
+El programa lee un archivo de texto con instrucciones del lenguaje
+ensamblador ASM, las traduce a binario, las carga en una memoria simulada y las
 ejecuta una por una, mostrando en pantalla cómo cambian el contador de programa,
 el registro de instrucción, el acumulador, los registros de propósito general y
 el Bloque de Control de Proceso.
@@ -146,7 +146,7 @@ En la carpeta [`Ejemplo/`](Ejemplo/):
 
 | Archivo | Contenido |
 |---|---|
-| `file.asm` | El programa de la lámina 6 del enunciado, 7 instrucciones |
+| `file.asm` | 7 instrucciones |
 | `programa-largo.asm` | 35 instrucciones, usa las cinco operaciones y los cuatro registros |
 | `ejemplo2.asm` | Programa corto con valores negativos |
 | `error-sintaxis.asm` | Provoca tres errores de sintaxis a la vez |
@@ -172,7 +172,7 @@ Cada posición guarda una palabra de 16 bits, de modo que **una línea de progra
 ocupa exactamente una posición**.
 
 El proceso de usuario no puede leer la zona de kernel: el intento lanza una
-excepción. Es el equivalente didáctico de una violación de segmento.
+excepción. Es el equivalente de una violación de segmento.
 
 ## Bloque de Control de Proceso
 
@@ -211,10 +211,7 @@ archivo completo antes de fallar, para que el usuario corrija en una sola pasada
 
 ## Decisiones de diseño
 
-**Opcodes de 4 bits, no de 3.** La lámina 5 del enunciado lista los opcodes con
-tres bits y la lámina 7 con cuatro. Son el mismo valor con un cero a la
-izquierda; se usó la versión de cuatro bits, que es la de los ejemplos binarios
-del propio enunciado y la de la figura 1.3d de Stallings.
+**Opcodes de 4 bits, no de 3.** Se usó la versión de cuatro bits, que es la de los ejemplos binarios del propio enunciado y la de la figura 1.3d de Stallings.
 
 **Palabra de memoria de 16 bits, una línea por posición.** Permite que una
 instrucción completa quepa en una sola celda, como pide el enunciado.
@@ -224,12 +221,11 @@ internamente, de modo que `Integer.toBinaryString(-8)` produciría `11111000` en
 lugar de `10001000`. La conversión está implementada explícitamente en
 `util/BinUtil`.
 
-**Aritmética resuelta en decimal.** Las sumas y restas usan enteros normales de
-Java; el binario existe solo en tres momentos: al ensamblar, al decodificar la
+**Aritmética resuelta en decimal.** Las sumas y restas usan enteros; el binario existe solo en tres momentos: al ensamblar, al decodificar la
 palabra leída de memoria, y al mostrar los valores en pantalla.
 
 **El desbordamiento detiene el proceso** en lugar de saturar el valor en el
-límite. Es más honesto con el formato de 8 bits y permite demostrar el manejo
+límite y permite demostrar el manejo
 del error.
 
 **La carga en memoria es atómica.** Se valida el espacio antes de limpiar, de
@@ -237,57 +233,8 @@ modo que un programa que no cabe no destruye el que ya estaba cargado.
 
 **La ejecución automática usa `javax.swing.Timer`**, nunca un bucle. Un bucle
 dentro del hilo de despacho de eventos congelaría la ventana hasta terminar y no
-se vería nada de la ejecución.
+se vería nada de la ejecución, es un error que sucedio y se tuvo que cambiar a esta manera.
 
-**El núcleo no conoce Swing.** Los paquetes `core` e `isa` no importan ninguna
-clase de la interfaz gráfica. La comunicación va por el patrón Observer, y la
-ventana implementa la interfaz `gui/VistaPrincipal`, contra la cual programa el
-controlador.
-
-**Diferencia con Stallings:** en el libro `LOAD`, `STORE` y `ADD` operan sobre
-direcciones de memoria; en este enunciado operan sobre registros. La consecuencia
-es que ninguna instrucción escribe datos en memoria, y la zona de usuario solo
-guarda código.
-
-## Estructura del proyecto
-
-```
-Tarea_1_Principios/
-├── Ejemplo/                      programas .asm de prueba
-├── Programa/minipc/              proyecto Maven
-│   ├── pom.xml
-│   └── src/
-│       ├── main/java/com/mycompany/minipc/
-│       │   ├── MiniPC.java       punto de entrada
-│       │   ├── util/             conversiones binarias
-│       │   ├── isa/              juego de instrucciones y ensamblador
-│       │   ├── core/             procesador, memoria, registros, BCP
-│       │   ├── io/               lectura de archivos
-│       │   ├── excepciones/      errores del dominio
-│       │   └── gui/              interfaz, controlador y modelos de tabla
-│       └── test/java/…           92 pruebas automáticas
-└── README.md
-```
-
-## Pruebas automáticas
-
-El proyecto incluye **92 pruebas** en 8 clases, que verifican el simulador sin
-abrir ninguna ventana.
-
-| Clase | Pruebas | Verifica |
-|---|---|---|
-| `BinUtilTest` | 10 | Conversión signo-magnitud en todo el rango |
-| `InstruccionTest` | 10 | La codificación binaria de la lámina 7 |
-| `EnsambladorTest` | 11 | Sintaxis, comentarios y reporte de errores |
-| `BancoRegistrosTest` | 11 | Registros, celdas de memoria y estados |
-| `MemoriaTest` | 12 | Zonas, carga atómica y validación de espacio |
-| `ProcesadorTest` | 15 | El ciclo fetch-execute contra la lámina 6 |
-| `CargadorASMTest` | 8 | Lectura y validación de archivos |
-| `ControladorPrincipalTest` | 15 | La cadena completa con una vista de prueba |
-
-La prueba central, `ProcesadorTest.reproduceLaTablaDelEnunciado`, ejecuta el
-programa de ejemplo instrucción por instrucción y compara AC, AX y BX contra los
-siete estados de la lámina 6 del enunciado.
 
 ## Referencia
 
