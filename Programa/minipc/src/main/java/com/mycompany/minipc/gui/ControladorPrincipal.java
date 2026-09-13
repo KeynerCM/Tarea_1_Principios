@@ -261,6 +261,7 @@ public class ControladorPrincipal implements ObservadorCPU {
         vista.refrescarMemoria();
         vista.mostrarBCP(cpu.getBcp());
         vista.actualizarBarraContexto(nombreArchivo, textoDelEstado());
+        vista.actualizarUsoMemoria(cpu.getMemoria().getPorcentajeUso());
         vista.actualizarBotones(cpu.hayPrograma(), temporizador.isRunning(),
                 cpu.haTerminado());
     }

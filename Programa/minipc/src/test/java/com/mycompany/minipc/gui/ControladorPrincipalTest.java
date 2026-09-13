@@ -49,6 +49,7 @@ class ControladorPrincipalTest {
         private boolean termino;
         private String archivoEnBarra = "";
         private String estadoEnBarra = "";
+        private int usoMemoria = -1;
 
         @Override
         public void mostrarInstrucciones(List<Instruccion> programa) {
@@ -98,6 +99,11 @@ class ControladorPrincipalTest {
         public void actualizarBarraContexto(String nombreArchivo, String estado) {
             this.archivoEnBarra = nombreArchivo;
             this.estadoEnBarra = estado;
+        }
+
+        @Override
+        public void actualizarUsoMemoria(int porcentaje) {
+            this.usoMemoria = porcentaje;
         }
 
         @Override

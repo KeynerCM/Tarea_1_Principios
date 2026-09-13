@@ -80,6 +80,13 @@ public interface VistaPrincipal {
     void actualizarBarraContexto(String nombreArchivo, String estado);
 
     /**
+     * Actualiza el indicador de ocupacion de la zona de usuario.
+     *
+     * @param porcentaje porcentaje ocupado, de 0 a 100
+     */
+    void actualizarUsoMemoria(int porcentaje);
+
+    /**
      * Pide al usuario que elija un archivo de codigo ensamblador.
      *
      * @return el archivo elegido, o null si cancelo
